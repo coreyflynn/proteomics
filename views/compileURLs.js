@@ -1,6 +1,8 @@
 function query() {
 
-   var collection = document.getElementById("collection");
+   alert('test');
+
+/*   var collection = document.getElementById("collection");
    var key  = document.getElementById("key");
    var value = document.getElementById("value");
 
@@ -15,5 +17,5 @@ function query() {
     }
     URL += '}';
 
-    window.location = URL;
-}
+    window.location = URL;*/
+};

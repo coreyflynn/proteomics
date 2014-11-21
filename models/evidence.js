@@ -1,7 +1,5 @@
 var mongoose = require('mongoose');
+var database = require('./database.js');
 
-mongoose.connect('mongodb://localhost:27017/proteomics');
-
-var Evidence = mongoose.model('Evidence', {}, 'evidence');
-
-module.exports = Evidence;
+var evidence = mongoose.model('evidence', {}, 'evidence');
+module.exports = evidence;
