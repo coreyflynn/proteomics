@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
+var async = require('async');
 var evidence = require('../models/evidence');
 var experiments = require('../models/experiments');
 var peptides = require('../models/peptides');
 var proteingroups = require('../models/proteingroups');
+var modspecpeptides = require('../models/modspecpeptides');
 var db = require('../models/database');
 
 /* Blank page (help) */
@@ -42,31 +44,32 @@ router.get('/evidence', function(req, res) {
         });
 });
 
+router.get('/bygene', function(req, res) {
+        var geneName = req.query.g;
+        var criteria = {'gene names':geneName};
+        var retFields = {expID:1, 'gene names':1, _id:0};
+        var results = {counts:{}};
 
-// #################################
-// ### TODO: Other table lookups ###
-// #################################
+        console.log("Bingo!");
 
-router.get('/bygenename', function(req, res) {
-
-	var geneName = req.query.g;
-	var criteria = {'gene names':geneName};
-	var retFields = {expID:1, 'gene names':1, _id:0};
-	if (geneName != null) {
-        	// Query proteingroups
-        	/*proteingroups.find(criteria, retFields, function(err, results) {
-                	totalResults['proteinGroups'] = results;
-        	});*/
-        	proteingroups.count(criteria, function(err, proteinGroupsCount) {
-			proteingroups.find(criteria, retFields, function(err, proteinGroupsResults) {
-				evidence.count(criteria, function (err, evidenceCount) {
-					evidence.find(criteria, retFields, function(err, evidenceResults) {
-						res.json({counts:{proteinGroups: proteinGroupsCount, evidence: evidenceCount}, proteinGroups: proteinGroupsResults, evidence: evidenceResults});
-					});
-				});
-			});
-        	});
-	};
-}); 
+        if (geneName != null) {
+                async.parallel([
+                        function (callback) {evidence.find(criteria, retFields, function(err, evidenceResults) {results.evidence = evidenceResults; callback();})},
+                        function (callback) {evidence.count(criteria, function(err, evidenceCount) {results.counts.evidence = evidenceCount; callback();})},
+                        function (callback) {proteingroups.find(criteria, retFields, function(err, proteinGroupsResults) {results.proteinGroups = proteinGroupsResults; callback();})},
+                        function (callback) {proteingroups.count(criteria, function(err, proteinGroupsCount) {results.counts.proteinGroups = proteinGroupsCount; callback();})},
+                        function (callback) {peptides.find(criteria, retFields, function(err, peptidesResults) {results.peptides = peptidesResults; callback();})},
+                        function (callback) {peptides.count(criteria, function(err, peptidesCount) {results.counts.peptides = peptidesCount; callback();})},
+                        function (callback) {modspecpeptides.find(criteria, retFields, function(err, modSpecPeptidesResults) {results.modSpecPeptides = modSpecPeptidesResults; callback();})},
+                        function (callback) {modspecpeptides.count(criteria, function(err, modSpecPeptidesCount) {results.counts.modSpecPeptides = modSpecPeptidesCount; callback();})},
+                        ],
+                        function (err) {
+                                if (err)
+                                        console.log(err + " ### " + results);
+                                res.json(results);
+                        }
+                );
+        }
+});
 
 module.exports = router;
