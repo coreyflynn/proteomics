@@ -45,31 +45,127 @@ router.get('/evidence', function(req, res) {
 });
 
 router.get('/bygene', function(req, res) {
-        var geneName = req.query.g;
+        var geneName = req.query.g; var display = req.query.d;
         var criteria = {'gene names':geneName};
         var retFields = {expID:1, 'gene names':1, _id:0};
-        var results = {counts:{}};
+        var retFieldsDistinct = {expID:1, id:1, _id:0};
+        var results = {counts:{}, distinct:{experiments:[]}};
 
-        console.log("Bingo!");
+        async.series([
 
-        if (geneName != null) {
-                async.parallel([
-                        function (callback) {evidence.find(criteria, retFields, function(err, evidenceResults) {results.evidence = evidenceResults; callback();})},
-                        function (callback) {evidence.count(criteria, function(err, evidenceCount) {results.counts.evidence = evidenceCount; callback();})},
-                        function (callback) {proteingroups.find(criteria, retFields, function(err, proteinGroupsResults) {results.proteinGroups = proteinGroupsResults; callback();})},
-                        function (callback) {proteingroups.count(criteria, function(err, proteinGroupsCount) {results.counts.proteinGroups = proteinGroupsCount; callback();})},
-                        function (callback) {peptides.find(criteria, retFields, function(err, peptidesResults) {results.peptides = peptidesResults; callback();})},
-                        function (callback) {peptides.count(criteria, function(err, peptidesCount) {results.counts.peptides = peptidesCount; callback();})},
-                        function (callback) {modspecpeptides.find(criteria, retFields, function(err, modSpecPeptidesResults) {results.modSpecPeptides = modSpecPeptidesResults; callback();})},
-                        function (callback) {modspecpeptides.count(criteria, function(err, modSpecPeptidesCount) {results.counts.modSpecPeptides = modSpecPeptidesCount; callback();})},
-                        ],
-                        function (err) {
-                                if (err)
-                                        console.log(err + " ### " + results);
-                                res.json(results);
+		function (callback) {
+			async.parallel([
+                		function (callback) {
+                		        evidence.find(criteria, retFields, function(err, evidenceResults) {
+                	        	        results.evidence = evidenceResults; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        evidence.count(criteria, function(err, evidenceCount) {
+                		                results.counts.evidence = evidenceCount; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        proteingroups.find(criteria, retFields, function(err, proteinGroupsResults) {
+                		                results.proteinGroups = proteinGroupsResults; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        proteingroups.count(criteria, function(err, proteinGroupsCount) {
+                		                results.counts.proteinGroups = proteinGroupsCount; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        peptides.find(criteria, retFields, function(err, peptidesResults) {
+                		                results.peptides = peptidesResults; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        peptides.count(criteria, function(err, peptidesCount) {
+                		                results.counts.peptides = peptidesCount; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        modspecpeptides.find(criteria, retFields, function(err, modSpecPeptidesResults) {
+                		                results.modSpecPeptides = modSpecPeptidesResults; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        modspecpeptides.count(criteria, function(err, modSpecPeptidesCount) {
+                		                results.counts.modSpecPeptides = modSpecPeptidesCount; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        evidence.find(criteria).distinct('expID', function(err, distinctEvidence) {
+                		                results.distinct.evidence = distinctEvidence; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        evidence.find(criteria).distinct('modified sequence', function (err, distinctModSeq) {
+                		                results.distinct.modseq = distinctModSeq; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        proteingroups.find(criteria).distinct('expID', function(err, distinctProteinGroups) {
+                		                results.distinct.proteinGroups = distinctProteinGroups; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        peptides.find(criteria).distinct('expID', function(err, distinctPeptides) {
+                		                results.distinct.peptides = distinctPeptides; callback();
+                		        })
+                		},
+                		function (callback) {
+                		        modspecpeptides.find(criteria).distinct('expID', function(err, distinctModSpecPeptides) {
+                		                results.distinct.modSpecPeptides = distinctModSpecPeptides; callback();
+                		        })
+                		}],
+				function () {callback();})
+		},
+
+                function (callback) {
+			var findCount = 0;
+                        var distinctExperiments = results.distinct.evidence.concat(results.distinct.proteinGroups, results.distinct.peptides, results.distinct.modSpecPeptides);
+                        for (var id in distinctExperiments) {
+                                experiments.find({_id: distinctExperiments[id]}, {path:1}, function (err, fullDistinctInfo) {
+                                        // Check to see if it's unique
+					var counter; var add = true;
+					for (counter = 0; counter < results.distinct.experiments.length; counter++) {
+						console.log("Comparing " + fullDistinctInfo[0] + " and " + results.distinct.experiments[counter]);
+						if (JSON.stringify(fullDistinctInfo[0]) == JSON.stringify(results.distinct.experiments[counter])) {
+							console.log("They look so goddamn like the same person");
+							add = false;
+							break;
+						}
+					}
+					if (add) results.distinct.experiments.push(fullDistinctInfo[0]);
+					findCount++;
+                                });
                         }
-                );
-        }
+
+			// Check back every 500ms to see if we're done with the finds
+			var int = setInterval(function () {
+				if (findCount == distinctExperiments.length) {
+					clearInterval(int);
+					callback();
+				}
+			}, 500);
+                }],
+
+        function (err) {
+                if (err) {
+                        throw(err);
+                }
+                if (display == "table") {
+                        console.log("Experiments array: " + JSON.stringify(results.distinct.experiments));
+                        res.render('resultsTable', {results:JSON.stringify(results.distinct.experiments)});
+                }
+                else {
+                        res.json(results);
+                }
+        });
 });
+
+
 
 module.exports = router;
