@@ -2,6 +2,8 @@
   "name": "frontend",
   "version": "0.0.1",
   "dependencies": {
-      "barista": "git@github.com:cmap/barista.git#develop"
+    "barista": "git@github.com:cmap/barista.git#develop",
+    "slickgrid": "~2.1.0",
+    "jquery-ui": "~1.11.2"
   }
 }
