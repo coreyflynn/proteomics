@@ -1,14 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var experiments = require('../models/experiments');
-//var evidence = require('../models/evidence');
+var search = require('../models/search');
 
 /* GET home page. */
 router.get('/', function(req, res) {
-//	experiments.find({}, function(err, results) {
-//		res.json(results);
-//	});
-	res.render('index', { title: 'Proteomics Crawler v0.1' });
+	res.render('search', { collections: experiments.db.collections });
 });
 
 module.exports = router;

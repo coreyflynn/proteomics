@@ -21,216 +21,144 @@ Array.prototype.unique = function() {
     return a;
 };
 
-/* Blank page (help) */
+
+
+
 router.get('/', function(req, res) {
-	var query = req.query.q;
-	var retCols = req.query.r;
-	var distinct = req.query.d;
+        var query     = {};
+        var retCols   = {};
+        var colsToAdd = [];
+        var distinct  = req.query.d;
 
-	if (query    == null) query    = {'gene names':'ACTB'};
-	if (retCols  == null) retCols  = {};
+        try {query     = JSON.parse(decodeURIComponent(req.query.q));}
+                catch (e) {res.json({error:"Problem parsing query parameter"});return;}
 
-	if (distinct != null) results = [];
-	else results = {};
-	
-	async.series([
-		function (callback) {async.parallel([
-			function (callback) {
-				console.log("Starting e call");
-				if (distinct == null) {
-					evidence.find(query, retCols, function (error, queryResults) {
-						results.evidence = queryResults; callback ();
-					})
-				}
-				else {
-					evidence.distinct(distinct, function (error, queryResults) {
-						results = results.concat(queryResults); callback();
-					})
-				}
-                                console.log("Ending e call");
-			},
-			function (callback) {
-                                console.log("Starting m call");
-	                        if (distinct == null) {
-	                                modspecpeptides.find(query, retCols, function (error, queryResults) {
-	                                        results.modSpecPeptides = queryResults; callback();
-	                                })
-	                        }
-	                        else {
-	                                modspecpeptides.distinct(distinct, function (error, queryResults) {
-	                                        results = results.concat(queryResults); callback();
-	                        	})
-				}
-                                console.log("Ending m call");
-	                },
-			function (callback) {
-                                console.log("Starting p call");
-	                        if (distinct == null) {
-	                                peptides.find(query, retCols, function (error, queryResults) {
-	                                        results.peptides = queryResults; callback();
-	                                })
-	                        }
-	                        else {
-	                                peptides.distinct(distinct, function (error, queryResults) {
-	                                        results = results.concat(queryResults); callback();
-	                        	})
-				}
-                                console.log("Ending p call");
-	                },
-			function (callback) {
-                                console.log("Starting g call");
-	                        if (distinct == null) {
-	                                proteingroups.find(query, retCols, function (error, queryResults) {
-	                                        results.proteinGroups = queryResults; callback();
-	                                })
-	                        }
-	                        else {
-	                                proteingroups.distinct(distinct, function (error, queryResults) {
-	                                        results = results.concat(queryResults); callback();
-	                        	})
-				}
-                                console.log("Ending g call");
-	                }
-		],
-	
-		function (error) {console.log("Calling back");callback();}
-	
-		)},
-		
-		// Sort the array (part two)
-		function (callback) {
-			if (distinct != null) {
-				console.log("Uniquifying array...");
-				results = results.unique();
-			}
-			callback();
-		}
-		],
-		function (error) {
-			res.json(results);
-		});
+	if (req.query.f != null) {
+            try {retCols   = JSON.parse(decodeURIComponent(req.query.f));}
+                catch (e) {res.json({error:"Problem parsing return values"});return;}
+	}
 
-});
+        if (req.query.col == null)
+            colsToAdd = ["evidence","modificationSpecificPeptides","peptides","proteinGroups"];
+        else
+            try {colsToAdd = JSON.parse(req.query.col);}
+            catch (e) {res.json({error:"Problem parsing collections"});return;}
 
-router.get('/bygene', function(req, res) {
-        var geneName = req.query.g; var display = req.query.display;
-	var distinct = req.query.d;
-        var criteria = {'gene names':geneName};
-        var retFields = {expID:1, 'gene names':1, _id:0};
-        var retFieldsDistinct = {expID:1, id:1, _id:0};
-        var results = {counts:{}, distinct:{experiments:[]}};
+        if (distinct != null) {
+                results = [];
+        }
+        else results = {};
+
+        /* Two steps to be run in series:
+        *    1. Make the calls to the database (in parallel)
+        *    2. Make array unique
+        *    Callback: Print JSON results */
 
         async.series([
 
-		function (callback) {
-			async.parallel([
-                		function (callback) {
-                		        evidence.find(criteria, retFields, function(err, evidenceResults) {
-                	        	        results.evidence = evidenceResults; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        evidence.count(criteria, function(err, evidenceCount) {
-                		                results.counts.evidence = evidenceCount; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        proteingroups.find(criteria, retFields, function(err, proteinGroupsResults) {
-                		                results.proteinGroups = proteinGroupsResults; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        proteingroups.count(criteria, function(err, proteinGroupsCount) {
-                		                results.counts.proteinGroups = proteinGroupsCount; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        peptides.find(criteria, retFields, function(err, peptidesResults) {
-                		                results.peptides = peptidesResults; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        peptides.count(criteria, function(err, peptidesCount) {
-                		                results.counts.peptides = peptidesCount; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        modspecpeptides.find(criteria, retFields, function(err, modSpecPeptidesResults) {
-                		                results.modSpecPeptides = modSpecPeptidesResults; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        modspecpeptides.count(criteria, function(err, modSpecPeptidesCount) {
-                		                results.counts.modSpecPeptides = modSpecPeptidesCount; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        evidence.find(criteria).distinct('expID', function(err, distinctEvidence) {
-                		                results.distinct.evidence = distinctEvidence; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        evidence.find(criteria).distinct('modified sequence', function (err, distinctModSeq) {
-                		                results.distinct.modseq = distinctModSeq; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        proteingroups.find(criteria).distinct('expID', function(err, distinctProteinGroups) {
-                		                results.distinct.proteinGroups = distinctProteinGroups; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        peptides.find(criteria).distinct('expID', function(err, distinctPeptides) {
-                		                results.distinct.peptides = distinctPeptides; callback();
-                		        })
-                		},
-                		function (callback) {
-                		        modspecpeptides.find(criteria).distinct('expID', function(err, distinctModSpecPeptides) {
-                		                results.distinct.modSpecPeptides = distinctModSpecPeptides; callback();
-                		        })
-                		}],
-				function () {callback();})
-		},
-
-                function (callback) {
-			var findCount = 0;
-                        var distinctExperiments = results.distinct.evidence.concat(results.distinct.proteinGroups, results.distinct.peptides, results.distinct.modSpecPeptides);
-                        for (var id in distinctExperiments) {
-                                experiments.find({_id: distinctExperiments[id]}, {path:1}, function (err, fullDistinctInfo) {
-                                        // Check to see if it's unique
-					var counter; var add = true;
-					for (counter = 0; counter < results.distinct.experiments.length; counter++) {
-						if (JSON.stringify(fullDistinctInfo[0]) == JSON.stringify(results.distinct.experiments[counter])) {
-							add = false;
-							break;
-						}
-					}
-					if (add) results.distinct.experiments.push(fullDistinctInfo[0]);
-					findCount++;
-                                });
+                // Step 1 - Make DB calls in parallel
+                function (outerCB) {
+                async.parallel([
+                    function (callback) {
+                        if (colsToAdd.indexOf('evidence') > -1) {
+                            if (distinct == null) {
+                                    evidence.find(query, retCols, function (error, queryResults) {
+                                            results.evidence = queryResults;callback();
+                                    });
+                            }
+                            else {
+                                    evidence.distinct(distinct, query, function (error, queryResults) {
+				            results = results.concat(queryResults);callback();
+                                    });
+                            }
                         }
+                        else {callback();}
+                    },
+                    function (callback) {
+                        if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
+                            if (distinct == null) {
+                                    modspecpeptides.find(query, retCols, function (error, queryResults) {
+                                            results.modSpecPeptides = queryResults;callback();
+                                    });
+                            }
+                            else {
+                                    modspecpeptides.distinct(distinct, query, function (error, queryResults) {
+                            		    results = results.concat(queryResults);callback();
+				    });
+                            }
+                        }
+                        else {callback();}
+                    },
+                    function (callback) {
+                        if (colsToAdd.indexOf('peptides') > -1) {
+                            if (distinct == null) {
+                                    peptides.find(query, retCols, function (error, queryResults) {
+					    results.peptides = queryResults;callback();
+                                    });
+                        }
+                            else {
+                                    peptides.distinct(distinct, query, function (error, queryResults) {
+                                            results = results.concat(queryResults);callback();
+                                    });
+                            }
+                        }
+                        else {callback();}
+                    },
+                    function (callback) {
+                        if (colsToAdd.indexOf('proteinGroups') > -1) {
+                            if (distinct == null) {
+                                    proteingroups.find(query, retCols, function (error, queryResults) {
+                                            results.proteinGroups = queryResults;callback();
+                                    });
+                            }
+                            else {
+                                    proteingroups.distinct(distinct, query, function (error, queryResults) {
+                                            results = results.concat(queryResults);callback();
+                                    });
+                            }
+                        }
+                        else {callback();}
+                    }
+                ],
 
-			// Check back every 500ms to see if we're done with the finds
-			var int = setInterval(function () {
-				if (findCount == distinctExperiments.length) {
-					clearInterval(int);
-					callback();
-				}
-			}, 500);
-                }],
+                // All DB calls made - proceed to step 2
+                function (error) {
+                        if(error)
+                                console.log(error);
+                        outerCB();
+                })
 
-        function (err) {
-                if (err) {
-                        throw(err);
-                }
-                if (display == "table") {
-                        res.render('resultsTable', {results:JSON.stringify(results.distinct.experiments)});
-                }
-                else {
-                        res.json(results);
-                }
+            },
+
+            // Step 2 - Make array unique
+            function (outerCB) {
+                    if (distinct != null) {
+
+                        // Make array unique, then alphabetize.
+                        results = results.unique();
+                        results.sort(function(a, b) {
+                                if (a.toLowerCase() < b.toLowerCase()) return -1;
+                                if (a.toLowerCase() > b.toLowerCase()) return 1;
+                                return 0;
+                        });
+
+                        var space = results.indexOf("");
+                        if (space > -1) results.splice(space, 1);
+                    }
+                    outerCB();
+            }
+
+                ],
+
+        // Callback - print JSON results
+        function (error) {
+                if(error)
+                        console.log(error);
+            res.json(results);
         });
+
 });
+
 
 
 

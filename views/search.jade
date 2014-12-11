@@ -2,19 +2,29 @@ doctype html
 html
   head
     title Proteomics Crawler
+    link(rel='stylesheet', href='/bootstrap/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/bootstrap/css/bootstrap-responsive.min.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
-    script(src='./compileURLs.js' type='text/javascript')
+    script(src='/javascripts/compileURLs.js')
   body
     h1 Query database
+    p Search these collections:
+    - each col in collections
+      input(type="checkbox", id=col.name, checked="true") 
+      |  #{col.name} &nbsp;
+    hr
     p
-      | From 
-      select(name='collection')
-        - var cols = collections
-          each col in cols
-            option= col
-      |  select all where 
-      input(type="text", name="key")
+      | Select columns (leave blank for all) 
+      input(type="text", name="retCol")
+      |  where 
+      input(type="text", id="key")
       |  = 
-      input(type="text", name="value")
+      input(type="text", id="value")
       |  
-      button(onclick="query();") GO
+      button(onClick="query()") GO
+    hr
+    p
+      | Select distinct values of 
+      input(type="text", id="distinct")
+      |  
+      button(onClick="distinct()") GO
