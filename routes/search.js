@@ -86,7 +86,7 @@ router.get('/', function(req, res) {
         function (error) {
         	if(error)
         		console.log(error);
-            res.json(results);
+            res.jsonp(results);
         });
 
 });
