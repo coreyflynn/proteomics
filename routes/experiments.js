@@ -35,14 +35,14 @@ router.get('/', function(req, res) {
 
 	if (req.query.f != null) {
             try {retCols   = JSON.parse(decodeURIComponent(req.query.f));}
-                catch (e) {res.json({error:"Problem parsing return values"});return;}
+                catch (e) {res.jsonp({error:"Problem parsing return values"});return;}
 	}
 
         if (req.query.col == null)
             colsToAdd = ["evidence","modificationSpecificPeptides","peptides","proteinGroups"];
         else
             try {colsToAdd = JSON.parse(req.query.col);}
-            catch (e) {res.json({error:"Problem parsing collections"});return;}
+            catch (e) {res.jsonp({error:"Problem parsing collections"});return;}
 
         if (distinct != null) {
                 results = [];
@@ -167,7 +167,7 @@ router.get('/', function(req, res) {
         function (error) {
                 if(error)
                         console.log(error);
-            res.json(results);
+            res.jsonp(results);
         });
 
 });

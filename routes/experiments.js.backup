@@ -148,7 +148,7 @@ router.get('/', function(req, res) {
         function (error) {
         	if(error)
         		console.log(error);
-            res.json(results);
+            res.jsonp(results);
         });
 
 });
@@ -274,7 +274,7 @@ router.get('/bygene', function(req, res) {
                         res.render('resultsTable', {results:JSON.stringify(results.distinct.experiments)});
                 }
                 else {
-                        res.json(results);
+                        res.jsonp(results);
                 }
         });
 });
