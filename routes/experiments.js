@@ -30,8 +30,8 @@ router.get('/', function(req, res) {
         var colsToAdd = [];
         var distinct  = req.query.d;
 
-        try {query     = JSON.parse(decodeURIComponent(req.query.q));}
-                catch (e) {res.json({error:"Problem parsing query parameter"});return;}
+        try {query     = JSON.parse(req.query.q);}
+                catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()});return;}
 
 	if (req.query.f != null) {
             try {retCols   = JSON.parse(decodeURIComponent(req.query.f));}
@@ -49,16 +49,21 @@ router.get('/', function(req, res) {
         }
         else results = {};
 
+	/////////////////////////////////////////////////////
         /* Two steps to be run in series:
         *    1. Make the calls to the database (in parallel)
         *    2. Make array unique
         *    Callback: Print JSON results */
+	/////////////////////////////////////////////////////
 
         async.series([
 
-                // Step 1 - Make DB calls in parallel
-                function (outerCB) {
+            // Step 1 - Make DB calls in parallel
+	    /////////////////////////////////////
+            function (outerCB) {
                 async.parallel([
+
+		// EVIDENCE //
                     function (callback) {
                         if (colsToAdd.indexOf('evidence') > -1) {
                             if (distinct == null) {
@@ -74,6 +79,8 @@ router.get('/', function(req, res) {
                         }
                         else {callback();}
                     },
+
+		// MODIFICATION SPECIFIC PEPTIDES //
                     function (callback) {
                         if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
                             if (distinct == null) {
@@ -89,6 +96,8 @@ router.get('/', function(req, res) {
                         }
                         else {callback();}
                     },
+
+		// PEPTIDES //
                     function (callback) {
                         if (colsToAdd.indexOf('peptides') > -1) {
                             if (distinct == null) {
@@ -104,6 +113,8 @@ router.get('/', function(req, res) {
                         }
                         else {callback();}
                     },
+
+		// PROTEIN GROUPS //
                     function (callback) {
                         if (colsToAdd.indexOf('proteinGroups') > -1) {
                             if (distinct == null) {
@@ -121,7 +132,7 @@ router.get('/', function(req, res) {
                     }
                 ],
 
-                // All DB calls made - proceed to step 2
+		// All DB calls made - proceed to step 2
                 function (error) {
                         if(error)
                                 console.log(error);
@@ -131,6 +142,7 @@ router.get('/', function(req, res) {
             },
 
             // Step 2 - Make array unique
+	    /////////////////////////////
             function (outerCB) {
                     if (distinct != null) {
 
@@ -148,9 +160,10 @@ router.get('/', function(req, res) {
                     outerCB();
             }
 
-                ],
+        ],
 
         // Callback - print JSON results
+	////////////////////////////////
         function (error) {
                 if(error)
                         console.log(error);
