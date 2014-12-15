@@ -6,8 +6,6 @@ var evidence        = require('../models/evidence');
 var peptides        = require('../models/peptides');
 var proteingroups   = require('../models/proteingroups');
 var modspecpeptides = require('../models/modspecpeptides');
-var db              = require('../models/database');
-
 
 Array.prototype.unique = function() {
     var a = this.concat();
