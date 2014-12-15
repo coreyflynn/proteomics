@@ -19,9 +19,6 @@ Array.prototype.unique = function() {
     return a;
 };
 
-
-
-
 router.get('/', function(req, res) {
 
     var results = [];

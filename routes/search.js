@@ -22,7 +22,7 @@ Array.prototype.unique = function() {
     return a;
 };
 
-router.get('/experiments', experiments)
+router.get('/experiments', experiments);
 
 router.get('/', function(req, res) {
         var query     = {};
@@ -44,7 +44,7 @@ router.get('/', function(req, res) {
             try {colsToAdd = JSON.parse(req.query.col);}
             catch (e) {res.jsonp({error:"Problem parsing collections"});return;}
 
-        if (distinct != null) {
+        if (related != null) {
                 results = [];
         }
         else results = {};
@@ -66,13 +66,13 @@ router.get('/', function(req, res) {
         // EVIDENCE //
                     function (callback) {
                         if (colsToAdd.indexOf('evidence') > -1) {
-                            if (distinct == null) {
+                            if (related == null) {
                                     evidence.find(query, retCols, function (error, queryResults) {
                                             results.evidence = queryResults;callback();
                                     });
                             }
                             else {
-                                    evidence.distinct(distinct, query, function (error, queryResults) {
+                                    evidence.distinct(related, query, function (error, queryResults) {
                             results = results.concat(queryResults);callback();
                                     });
                             }
@@ -83,13 +83,13 @@ router.get('/', function(req, res) {
         // MODIFICATION SPECIFIC PEPTIDES //
                     function (callback) {
                         if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
-                            if (distinct == null) {
+                            if (related == null) {
                                     modspecpeptides.find(query, retCols, function (error, queryResults) {
                                             results.modSpecPeptides = queryResults;callback();
                                     });
                             }
                             else {
-                                    modspecpeptides.distinct(distinct, query, function (error, queryResults) {
+                                    modspecpeptides.distinct(related, query, function (error, queryResults) {
                                         results = results.concat(queryResults);callback();
                     });
                             }
@@ -100,13 +100,13 @@ router.get('/', function(req, res) {
         // PEPTIDES //
                     function (callback) {
                         if (colsToAdd.indexOf('peptides') > -1) {
-                            if (distinct == null) {
+                            if (related == null) {
                                     peptides.find(query, retCols, function (error, queryResults) {
                         results.peptides = queryResults;callback();
                                     });
                         }
                             else {
-                                    peptides.distinct(distinct, query, function (error, queryResults) {
+                                    peptides.distinct(related, query, function (error, queryResults) {
                                             results = results.concat(queryResults);callback();
                                     });
                             }
@@ -117,13 +117,13 @@ router.get('/', function(req, res) {
         // PROTEIN GROUPS //
                     function (callback) {
                         if (colsToAdd.indexOf('proteinGroups') > -1) {
-                            if (distinct == null) {
+                            if (related == null) {
                                     proteingroups.find(query, retCols, function (error, queryResults) {
                                             results.proteinGroups = queryResults;callback();
                                     });
                             }
                             else {
-                                    proteingroups.distinct(distinct, query, function (error, queryResults) {
+                                    proteingroups.distinct(related, query, function (error, queryResults) {
                                             results = results.concat(queryResults);callback();
                                     });
                             }
@@ -144,7 +144,7 @@ router.get('/', function(req, res) {
         // Step 2 - Make array unique
         /////////////////////////////
             function (outerCB) {
-                if (distinct != null) {
+                if (related != null) {
 
                     // Make array unique, then alphabetize.
                     results = results.unique();
