@@ -86,7 +86,7 @@ else results = {};
                                   if (query.hasOwnProperty(key)) {
                                      var reg = new RegExp(query[key]);
                                      if (reg.test(queryResults[counter]) == true) {
-                                         results.concat(queryResults[counter]);
+                                         results.push(queryResults[counter]);
                                          console.log(queryResults[counter] + " matches " + reg);
                                      }
                                  }
@@ -120,7 +120,7 @@ else {callback();}
                                     if (query.hasOwnProperty(key)) {
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
-                                            results.concat(queryResults[counter]);
+                                            results.push(queryResults[counter]);
                                             console.log(queryResults[counter] + " matches " + reg);
                                         }
                                     }
@@ -154,7 +154,7 @@ else {callback();}
                                     if (query.hasOwnProperty(key)) {
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
-                                            results.concat(queryResults[counter]);
+                                            results.push(queryResults[counter]);
                                             console.log(queryResults[counter] + " matches " + reg);
                                         }
                                     }
@@ -188,7 +188,7 @@ else {callback();}
                                     if (query.hasOwnProperty(key)) {
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
-                                            results.concat(queryResults[counter]);
+                                            results.push(queryResults[counter]);
                                             console.log(queryResults[counter] + " matches " + reg);
                                         }
                                     }
