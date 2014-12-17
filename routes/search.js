@@ -171,7 +171,7 @@ else {callback();}
     // PROTEIN GROUPS //
         function (callback) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
-                if (related == null & distinct == false) {
+                if (related == null) {
                     proteingroups.find(query, retCols, function (error, queryResults) {
                         results.proteinGroups = queryResults;callback();
                     });
