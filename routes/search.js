@@ -87,7 +87,6 @@ else results = {};
                                      var reg = new RegExp(query[key]);
                                      if (reg.test(queryResults[counter]) == true) {
                                          results.concat(queryResults[counter]);
-                                         console.log(queryResults[counter] + " meets " + reg);
                                      }
                                  }
                              }
@@ -95,7 +94,6 @@ else results = {};
                          callback();
                      }
                      else {
-                        console.log("Uhh, this shouldn't be reached...");
                       results = results.concat(queryResults);callback();
                   }
               });
@@ -122,7 +120,6 @@ else {callback();}
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
                                             results.concat(queryResults[counter]);
-                                            console.log(queryResults[counter] + " meets " + reg);
                                         }
                                     }
                                 }
@@ -130,7 +127,6 @@ else {callback();}
                             callback();
                         }
                         else {
-                            console.log("Uhh, this shouldn't be reached...");
                             results = results.concat(queryResults);callback();
                         }
                     });
@@ -142,7 +138,7 @@ else {callback();}
     // PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('peptides') > -1) {
-                if (related == null & distinct == false) {
+                if (related == null) {
                     peptides.find(query, retCols, function (error, queryResults) {
                         results.peptides = queryResults;callback();
                     });
@@ -157,7 +153,6 @@ else {callback();}
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
                                             results.concat(queryResults[counter]);
-                                            console.log(queryResults[counter] + " meets " + reg);
                                         }
                                     }
                                 }
@@ -165,7 +160,6 @@ else {callback();}
                             callback();
                         }
                         else {
-                            console.log("Uhh, this shouldn't be reached...");
                             results = results.concat(queryResults);callback();
                         }
                     });
@@ -184,7 +178,7 @@ else {callback();}
                 }
                 else {
                     proteingroups.distinct(related, query, function (error, queryResults) {
-                        if (distinct == true && distinct == false) {
+                        if (distinct == true) {
                             var counter;
                             for (counter = 0; counter < queryResults.length; counter++) {
                                 for (var key in query) {
@@ -192,15 +186,13 @@ else {callback();}
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
                                             results.concat(queryResults[counter]);
-                                            console.log(queryResults[counter] + " meets " + reg);
-                                        }
+					}
                                     }
                                 }
                             }
                             callback();
                         }
                         else {
-                            console.log("Uhh, this shouldn't be reached...");
                             results = results.concat(queryResults);callback();
                         }
                     });
