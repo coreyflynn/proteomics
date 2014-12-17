@@ -29,15 +29,20 @@ router.get('/', function(req, res) {
         var retCols   = {};
         var colsToAdd = [];
         var related   = req.query.r;
-	var distinct  = JSON.parse(req.query.d);
+	var distinct  = false;
 
         try {query     = JSON.parse(req.query.q);}
                 catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()});return;}
 
-    if (req.query.f != null) {
-            try {retCols   = JSON.parse(decodeURIComponent(req.query.f));}
-                catch (e) {res.jsonp({error:"Problem parsing return values"});return;}
-    }
+	if (req.query.f != null) {
+	    try {retCols   = JSON.parse(decodeURIComponent(req.query.f));}
+		catch (e) {res.jsonp({error:"Problem parsing return values"});return;}
+	}
+
+	if (req.query.d != null) {
+	    try {distinct = JSON.parse(req.query.d);}
+		catch (e) {res.jsonp({error:"Problem parsing distinct. Did you use quotes? Don't."});return;}
+	}
 
         if (req.query.col == null)
             colsToAdd = ["evidence","modificationSpecificPeptides","peptides","proteinGroups"];
@@ -67,7 +72,7 @@ router.get('/', function(req, res) {
         // EVIDENCE //
                     function (callback) {
                         if (colsToAdd.indexOf('evidence') > -1) {
-                            if (related == null && distint == false) {
+                            if (related == null) {
                                     evidence.find(query, retCols, function (error, queryResults) {
                                             results.evidence = queryResults;callback();
                                     });
@@ -81,7 +86,8 @@ router.get('/', function(req, res) {
 						    if (query.hasOwnProperty(key)) {
 							var reg = new RegExp(query[key]);
 							if (reg.test(queryResults[counter]) == true) {
-							    results.push(queryResults[counter])
+							    results.concat(queryResults[counter]);
+							    console.log(queryResults[counter] + " meets " + reg);
 							}
 						    }
 						}
@@ -114,7 +120,8 @@ router.get('/', function(req, res) {
                                                     if (query.hasOwnProperty(key)) {
                                                         var reg = new RegExp(query[key]);
                                                         if (reg.test(queryResults[counter]) == true) {
-                                                            results.push(queryResults[counter])
+                                                            results.concat(queryResults[counter]);
+                                                            console.log(queryResults[counter] + " meets " + reg);
                                                         }
                                                     }
                                                 }
@@ -133,7 +140,7 @@ router.get('/', function(req, res) {
         // PEPTIDES //
                     function (callback) {
                         if (colsToAdd.indexOf('peptides') > -1) {
-                            if (related == null) {
+                            if (related == null & distinct == false) {
                                     peptides.find(query, retCols, function (error, queryResults) {
                         results.peptides = queryResults;callback();
                                     });
@@ -147,7 +154,8 @@ router.get('/', function(req, res) {
                                                     if (query.hasOwnProperty(key)) {
                                                         var reg = new RegExp(query[key]);
                                                         if (reg.test(queryResults[counter]) == true) {
-                                                            results.push(queryResults[counter])
+                                                            results.concat(queryResults[counter]);
+                                                            console.log(queryResults[counter] + " meets " + reg);
                                                         }
                                                     }
                                                 }
@@ -166,21 +174,22 @@ router.get('/', function(req, res) {
         // PROTEIN GROUPS //
                     function (callback) {
                         if (colsToAdd.indexOf('proteinGroups') > -1) {
-                            if (related == null) {
+                            if (related == null & distinct == false) {
                                     proteingroups.find(query, retCols, function (error, queryResults) {
                                             results.proteinGroups = queryResults;callback();
                                     });
                             }
                             else {
                                     proteingroups.distinct(related, query, function (error, queryResults) {
-                                        if (distinct == true) {
+                                        if (distinct == true && distinct == false) {
                                             var counter;
                                             for (counter = 0; counter < queryResults.length; counter++) {
                                                 for (var key in query) {
                                                     if (query.hasOwnProperty(key)) {
                                                         var reg = new RegExp(query[key]);
                                                         if (reg.test(queryResults[counter]) == true) {
-                                                            results.push(queryResults[counter])
+                                                            results.concat(queryResults[counter]);
+                                                            console.log(queryResults[counter] + " meets " + reg);
                                                         }
                                                     }
                                                 }
@@ -209,6 +218,7 @@ router.get('/', function(req, res) {
         // Step 2 - Make array unique
         /////////////////////////////
             function (outerCB) {
+		console.log (results);
                 if (related != null) {
 
                     // Make array unique, then alphabetize.
