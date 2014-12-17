@@ -1,7 +1,4 @@
 var mongoose = require('mongoose');
 
-//mongoose.connect('mongodb://localhost:27017/proteomics');
-
-var Experiment = mongoose.model('Experiment', {path: String}, 'experiments');
-
-module.exports = Experiment;
+var experiments = mongoose.model('experiments', {}, 'experiments');
+module.exports = experiments;

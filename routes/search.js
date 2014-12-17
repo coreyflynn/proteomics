@@ -22,13 +22,14 @@ Array.prototype.unique = function() {
     return a;
 };
 
-router.get('/experiments', experiments);
+router.use('/experiments', experiments);
 
 router.get('/', function(req, res) {
         var query     = {};
         var retCols   = {};
         var colsToAdd = [];
         var related   = req.query.r;
+	var distinct  = JSON.parse(req.query.d);
 
         try {query     = JSON.parse(req.query.q);}
                 catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()});return;}
@@ -66,14 +67,30 @@ router.get('/', function(req, res) {
         // EVIDENCE //
                     function (callback) {
                         if (colsToAdd.indexOf('evidence') > -1) {
-                            if (related == null) {
+                            if (related == null && distint == false) {
                                     evidence.find(query, retCols, function (error, queryResults) {
                                             results.evidence = queryResults;callback();
                                     });
                             }
                             else {
                                     evidence.distinct(related, query, function (error, queryResults) {
-                            results = results.concat(queryResults);callback();
+					if (distinct == true) {
+					    var counter;
+					    for (counter = 0; counter < queryResults.length; counter++) {
+						for (var key in query) {
+						    if (query.hasOwnProperty(key)) {
+							var reg = new RegExp(query[key]);
+							if (reg.test(queryResults[counter]) == true) {
+							    results.push(queryResults[counter])
+							}
+						    }
+						}
+					    }
+					    callback();
+					}
+					else {
+                            		    results = results.concat(queryResults);callback();
+					}
                                     });
                             }
                         }
@@ -90,8 +107,24 @@ router.get('/', function(req, res) {
                             }
                             else {
                                     modspecpeptides.distinct(related, query, function (error, queryResults) {
-                                        results = results.concat(queryResults);callback();
-                    });
+                                        if (distinct == true) {
+                                            var counter;
+                                            for (counter = 0; counter < queryResults.length; counter++) {
+                                                for (var key in query) {
+                                                    if (query.hasOwnProperty(key)) {
+                                                        var reg = new RegExp(query[key]);
+                                                        if (reg.test(queryResults[counter]) == true) {
+                                                            results.push(queryResults[counter])
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            callback();
+                                        }
+                                        else {
+                                            results = results.concat(queryResults);callback();
+                                        }
+                                    });
                             }
                         }
                         else {callback();}
@@ -107,7 +140,23 @@ router.get('/', function(req, res) {
                         }
                             else {
                                     peptides.distinct(related, query, function (error, queryResults) {
+                                        if (distinct == true) {
+                                            var counter;
+                                            for (counter = 0; counter < queryResults.length; counter++) {
+                                                for (var key in query) {
+                                                    if (query.hasOwnProperty(key)) {
+                                                        var reg = new RegExp(query[key]);
+                                                        if (reg.test(queryResults[counter]) == true) {
+                                                            results.push(queryResults[counter])
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            callback();
+                                        }
+                                        else {
                                             results = results.concat(queryResults);callback();
+                                        }
                                     });
                             }
                         }
@@ -124,7 +173,23 @@ router.get('/', function(req, res) {
                             }
                             else {
                                     proteingroups.distinct(related, query, function (error, queryResults) {
+                                        if (distinct == true) {
+                                            var counter;
+                                            for (counter = 0; counter < queryResults.length; counter++) {
+                                                for (var key in query) {
+                                                    if (query.hasOwnProperty(key)) {
+                                                        var reg = new RegExp(query[key]);
+                                                        if (reg.test(queryResults[counter]) == true) {
+                                                            results.push(queryResults[counter])
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            callback();
+                                        }
+                                        else {
                                             results = results.concat(queryResults);callback();
+                                        }
                                     });
                             }
                         }
