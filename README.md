@@ -33,7 +33,7 @@ and set specific collections to be queried.
 
 <b>Example URL</b>
 
-```http://(DNS of box):3000/search?col=[]&q={}&r={}&d=```
+```http://(DNS of box):3000/search?col=[]&q={}&f={}&r=&d=```
 ```
 col (optional): ex - col=["evidence","peptides"]
                 A string array of the collections to query. Non-existent collection names will be ignored.
@@ -51,7 +51,7 @@ d   (optional): ex - d=true
                 matching distinct value (used for autocomplete with regex)
 ```
 
-```http://(DNS of box):3000/search/experiments?col=[]&q={}&r={}&d=```
+```http://(DNS of box):3000/search?col=[]&q={}&r=&d=```
 ```
 col (optional): ex - col=["evidence","peptides"]
                 A string array of the collections to query. Non-existent collection names will be ignored.
