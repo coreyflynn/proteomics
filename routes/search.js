@@ -72,7 +72,7 @@ else results = {};
     // EVIDENCE //
         function (callback) {
             if (colsToAdd.indexOf('evidence') > -1) {
-                if (related == null) {
+                if (related == null && distinct == false) {
                     evidence.find(query, retCols, function (error, queryResults) {
                         results.evidence = queryResults;callback();
                     });
@@ -87,6 +87,7 @@ else results = {};
                                      var reg = new RegExp(query[key]);
                                      if (reg.test(queryResults[counter]) == true) {
                                          results.concat(queryResults[counter]);
+                                         console.log(queryResults[counter] + " matches " + reg);
                                      }
                                  }
                              }
@@ -105,7 +106,7 @@ else {callback();}
     // MODIFICATION SPECIFIC PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
-                if (related == null) {
+                if (related == null && distinct == false) {
                     modspecpeptides.find(query, retCols, function (error, queryResults) {
                         results.modSpecPeptides = queryResults;callback();
                     });
@@ -120,6 +121,7 @@ else {callback();}
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
                                             results.concat(queryResults[counter]);
+                                            console.log(queryResults[counter] + " matches " + reg);
                                         }
                                     }
                                 }
@@ -138,7 +140,7 @@ else {callback();}
     // PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('peptides') > -1) {
-                if (related == null) {
+                if (related == null && distinct == false) {
                     peptides.find(query, retCols, function (error, queryResults) {
                         results.peptides = queryResults;callback();
                     });
@@ -153,6 +155,7 @@ else {callback();}
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
                                             results.concat(queryResults[counter]);
+                                            console.log(queryResults[counter] + " matches " + reg);
                                         }
                                     }
                                 }
@@ -171,7 +174,7 @@ else {callback();}
     // PROTEIN GROUPS //
         function (callback) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
-                if (related == null) {
+                if (related == null && distinct == false) {
                     proteingroups.find(query, retCols, function (error, queryResults) {
                         results.proteinGroups = queryResults;callback();
                     });
@@ -186,7 +189,8 @@ else {callback();}
                                         var reg = new RegExp(query[key]);
                                         if (reg.test(queryResults[counter]) == true) {
                                             results.concat(queryResults[counter]);
-					}
+                                            console.log(queryResults[counter] + " matches " + reg);
+                                        }
                                     }
                                 }
                             }
