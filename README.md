@@ -43,15 +43,12 @@ q  (mandatory): ex - q={"gene names":"ACTC"}
 f   (optional): ex - f={"protein names":1,"_id":0}
                 An object containing boolean values of whether or not to include said fields. Defaults to
                 showing all fields.
-r   (optional): ex - r=gene names
-                DOES NOT USE QUOTES. Overrides r param, returns only given field, and only related distinct
+d   (optional): ex - d=gene names
+                DOES NOT USE QUOTES. Overrides f param, returns only given field, and only distinct
                 values of that field.
-d   (optional): ex - d=true
-                DOES NOT USE QUOTES. A boolean true/false flag (defaults to false), to display ONLY the
-                matching distinct value (used for autocomplete with regex)
 ```
 
-```http://(DNS of box):3000/search?col=[]&q={}&r=&d=```
+```http://(DNS of box):3000/search/experiments?col=[]&q={}&r=&d=```
 ```
 col (optional): ex - col=["evidence","peptides"]
                 A string array of the collections to query. Non-existent collection names will be ignored.
@@ -61,7 +58,7 @@ q  (mandatory): ex - q={"gene names":"ACTC"}
 f   (optional): ex - f={"protein names":1,"_id":0}
                 An object containing boolean values of whether or not to include said fields. Defaults to
                 showing all fields.
-r   (optional): ex - r=gene names
-                DOES NOT USE QUOTES. Overrides r param, returns only given field, and only related distinct
+d   (optional): ex - d=gene names
+                DOES NOT USE QUOTES. Overrides f param, returns only given field, and only distinct
                 values of that field.
 ```
