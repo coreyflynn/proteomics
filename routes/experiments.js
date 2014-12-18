@@ -125,7 +125,7 @@ router.get('/', function(req, res) {
 	var counter;
 	for (counter = 0; counter < results.length; counter++) {
 	    experiments.find({_id:results[counter]}, {path:1}, function (error, queryResults) {
-		withPaths.push(queryResults[0]);console.log("PUSHING SHIT");
+		withPaths.push(queryResults[0]);
 	    });
 	}
 	var interval = setInterval(function() {

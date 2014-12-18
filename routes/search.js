@@ -158,7 +158,19 @@ router.get('/', function(req, res) {
 
             // Check regex one more time to remove arrayed objects.
             for (var key in query) {
-                var regexp = new RegExp(query[key]);
+
+                // Is it a regex or a string?
+                if (typeof query[key] == 'string')
+                    var regexp = new RegExp(query[key]);
+                else
+                    var regexp = new RegExp(query[key]['$regex']);
+
+                for (var index in results) {
+                    if (!regexp.test(results[index])) {
+                        console.log("Killing " + results[index] + " from array...");
+                        results.splice(index, 1);
+                    }
+                }
             }
         }
             outerCB();
