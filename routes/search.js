@@ -159,6 +159,13 @@ router.get('/', function(req, res) {
             // Check regex one more time to remove arrayed objects.
             for (var key in query) {
                 var regexp = new RegExp(query[key]);
+                console.log("Does " + regexp + " take out anything?");
+                for (var element in results) {
+		    if (!regexp.test(element)){
+			console.log(element);
+			results.splice(element, 1);
+		    }
+		}
             }
         }
             outerCB();
