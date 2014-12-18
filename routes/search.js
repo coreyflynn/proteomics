@@ -28,8 +28,7 @@ router.get('/', function(req, res) {
     var query     = {};
     var retCols   = {};
     var colsToAdd = [];
-    var related   = req.query.r;
-    var distinct  = false;
+    var distinct   = req.query.d;
 
     try {query     = JSON.parse(req.query.q);}
     catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()});return;}
@@ -45,7 +44,7 @@ router.get('/', function(req, res) {
         try {colsToAdd = JSON.parse(req.query.col);}
         catch (e) {res.jsonp({error:"Problem parsing collections"});return;}
 
-    if (related != null) {
+    if (distinct != null) {
         results = [];
     }
     else results = {};
@@ -67,13 +66,13 @@ router.get('/', function(req, res) {
     // EVIDENCE //
         function (callback) {
             if (colsToAdd.indexOf('evidence') > -1) {
-                if (related == null) {
+                if (distinct == null) {
                     evidence.find(query, retCols, function (error, queryResults) {
                         results.evidence = queryResults;callback();
                     });
                 }
                 else {
-                    evidence.distinct(related, query, function (error, queryResults) {
+                    evidence.distinct(distinct, query, function (error, queryResults) {
                         results = results.concat(queryResults);callback();
                     });
                 }
@@ -84,13 +83,13 @@ router.get('/', function(req, res) {
     // MODIFICATION SPECIFIC PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
-                if (related == null) {
+                if (distinct == null) {
                     modspecpeptides.find(query, retCols, function (error, queryResults) {
                         results.modSpecPeptides = queryResults;callback();
                     });
                 }
                 else {
-                    modspecpeptides.distinct(related, query, function (error, queryResults) {
+                    modspecpeptides.distinct(distinct, query, function (error, queryResults) {
                         results = results.concat(queryResults);callback();
                     });
                 }
@@ -101,13 +100,13 @@ router.get('/', function(req, res) {
     // PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('peptides') > -1) {
-                if (related == null) {
+                if (distinct == null) {
                     peptides.find(query, retCols, function (error, queryResults) {
                         results.peptides = queryResults;callback();
                     });
                 }
                 else {
-                    peptides.distinct(related, query, function (error, queryResults) {
+                    peptides.distinct(distinct, query, function (error, queryResults) {
                         results = results.concat(queryResults);callback();
                     });
                 }
@@ -118,13 +117,13 @@ router.get('/', function(req, res) {
     // PROTEIN GROUPS //
         function (callback) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
-                if (related == null) {
+                if (distinct == null) {
                     proteingroups.find(query, retCols, function (error, queryResults) {
                         results.proteinGroups = queryResults;callback();
                     });
                 }
                 else {
-                    proteingroups.distinct(related, query, function (error, queryResults) {
+                    proteingroups.distinct(distinct, query, function (error, queryResults) {
                         results = results.concat(queryResults);callback();
                     });
                 }
@@ -146,7 +145,7 @@ router.get('/', function(req, res) {
     /////////////////////////////
     function (outerCB) {
       console.log (results);
-      if (related != null) {
+      if (distinct != null) {
 
             // Make array unique, then alphabetize.
             results = results.unique();
@@ -165,10 +164,12 @@ router.get('/', function(req, res) {
                 else
                     var regexp = new RegExp(query[key]['$regex']);
 
-                for (var index in results) {
+		var index;
+                for (index = 0; index < results.length; index++) {
+		    console.log(index + " & " + results.length + " & testing " + results[index] + " against " + regexp);
                     if (!regexp.test(results[index])) {
                         console.log("Killing " + results[index] + " from array...");
-                        results.splice(index, 1);
+                        results.splice(index, 1); index--;
                     }
                 }
             }
