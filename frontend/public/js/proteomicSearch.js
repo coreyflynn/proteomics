@@ -1,16 +1,23 @@
 var evidenceData = [],
-    evidenceDataView,
+    pathData = [],
     datumLists = {},
     handleSearch,
+    handleSearchThrottled,
     handleSearchErrorMock,
     handleSearchSuccessMock,
     proteomicsURL,
     searchBox,
     searchString,
     evidenceTable,
-    evidenceTtableColumns,
-    evidenceTtableSorter,
-    evidenceTtableOptions;
+    evidenceTableColumns,
+    evidenceTableSorter,
+    evidenceTableOptions,
+    evidenceDataView,
+    pathTable,
+    pathTableColumns,
+    pathTableSorter,
+    pathTableOptions,
+    pathDataView;
 
 // Set up the default entry point for API calls
 proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
@@ -42,14 +49,12 @@ searchBox = new Barista.Views.PertSearchBar({
  */
 setTimeout(function(){
   $('input.typeahead').bind('input propertychange change',function(e){
-    // if(e.keyCode == 13) {
-      console.log('fdsa')
-      handleSearch(searchBox.get_val());
-    // }
+    console.log('fdsa')
+    handleSearchThrottled(searchBox.get_val());
   });
 
   $('body').on('typeahead:selected',function(e,suggestion,dataset){
-    handleSearch(suggestion.value);
+    handleSearchThrottled(suggestion.value);
   })
 },1000);
 
@@ -57,12 +62,21 @@ setTimeout(function(){
  * table setup *
  *****************/
 evidenceDataView = new Slick.Data.DataView({ inlineFilters: true });
+pathDataView = new Slick.Data.DataView({ inlineFilters: true });
 
 evidenceTableColumns = [
   { id: "sequence", name: "Sequence", field:"sequence",sortable: true},
 ];
+pathTableColumns = [
+  { id: "path", name: "File Path", field:"path",sortable: true},
+];
 
 evidenceTableOptions = {
+  enableColumnReorder: false,
+  multiColumnSort: true,
+  forceFitColumns: true,
+};
+pathTableOptions = {
   enableColumnReorder: false,
   multiColumnSort: true,
   forceFitColumns: true,
@@ -72,9 +86,16 @@ evidenceTable = new Slick.Grid('#evidenceTable',
   evidenceDataView,
   evidenceTableColumns,
   evidenceTableOptions);
+pathTable = new Slick.Grid('#pathTable',
+  pathDataView,
+  pathTableColumns,
+  pathTableOptions);
 
 evidenceTable.onSort.subscribe(function (e, args) {
     evidenceTableSorter(e,args);
+  });
+pathTable.onSort.subscribe(function (e, args) {
+    pathTableSorter(e,args);
   });
 
 
@@ -83,6 +104,7 @@ evidenceTable.onSort.subscribe(function (e, args) {
  *************/
 $('#apiError').css('opacity',0);
 $('#evidenceTable').css('opacity',0);
+$('#pathTable').css('opacity',0);
 
 // try to make a call to the proteomics API and let the user know if it fails
 (function(){$.ajax({
@@ -103,7 +125,7 @@ $('#evidenceTable').css('opacity',0);
  *********************/
 
 /**
- * function used to sort the columns in a table
+ * function used to sort the columns in the evidence table
  * @param {event} e    the event passed to the sorter
  * @param {opbject} args the arguments passed to the sorter from slickgrid
  */
@@ -121,20 +143,47 @@ evidenceTableSorter = function evidenceTableSorter (e, args){
     }
     return 0;
   });
-  updateTable();
+  updateTables();
 }
 
+/**
+ * function used to sort the columns in the path table
+ * @param {event} e    the event passed to the sorter
+ * @param {opbject} args the arguments passed to the sorter from slickgrid
+ */
+pathTableSorter = function pathTableSorter (e, args){
+  var cols = args.sortCols;
+  pathData.sort(function (dataRow1, dataRow2) {
+    for (var i = 0, l = cols.length; i < l; i++) {
+      var field = cols[i].sortCol.field;
+      var sign = cols[i].sortAsc ? 1 : -1;
+      var value1 = dataRow1[field], value2 = dataRow2[field];
+      var result = (value1 == value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
+      if (result != 0) {
+        return result;
+      }
+    }
+    return 0;
+  });
+  updateTables();
+}
 
 /**
  * Wrapper function around data view updates
  */
-updateTable = function updateTable () {
+updateTables = function updateTables () {
 
   evidenceDataView.beginUpdate();
   evidenceDataView.setItems(evidenceData);
   evidenceDataView.endUpdate();
   evidenceTable.invalidate();
   evidenceTable.render();
+
+  pathDataView.beginUpdate();
+  pathDataView.setItems(pathData);
+  pathDataView.endUpdate();
+  pathTable.invalidate();
+  pathTable.render();
 }
 
 /**
@@ -142,45 +191,91 @@ updateTable = function updateTable () {
  * @param {string} e the string that should be searched
  */
 handleSearch = function handleSearch (searchString) {
-  (function(){
-  params = {
-    q: ['{"','gene names','":{"$regex":"^',searchString,'"}}'].join(''),
-    f: '{"sequence":1}',
-    col: '["evidence"]'
-  }
 
-  $.ajax({
-    dataType: 'jsonp',
-    url: proteomicsURL,
-    data: params,
-    success: function (res) {
-      $('#apiError').animate({'opacity':0},600);
-      var sequences = [];
-      evidenceData = [];
-      console.log(res);
-      _.keys(res).forEach(function(key,i){
-        res[key].forEach(function(element,j){
-          sequences.push(element.sequence);
-        });
-      })
-      _.unique(sequences).forEach(function(seq,i){
-        evidenceData.push({id:i,sequence:seq});
-      })
-      updateTable();
-      $('#evidenceTable').animate({opacity:1},600);
-      },
-    error: function (jqXHR, textStatus) {
-      if (textStatus === 'error'){
-        $('#apiError').animate({'opacity':1},600);
-        $('#evidenceTable').animate({opacity:0},600);
-      }else{
-        console.log(jqXHR);
+  if (searchString.length){
+    (function(){
+      params = {
+        q: ['{"','gene names','":{"$regex":"^',searchString,'"}}'].join(''),
+        f: '{"sequence":1}',
+        col: '["evidence"]'
       }
+
+      $.ajax({
+        dataType: 'jsonp',
+        url: proteomicsURL,
+        data: params,
+        success: function (res) {
+          $('#apiError').animate({'opacity':0},600);
+          var sequences = [];
+          evidenceData = [];
+          _.keys(res).forEach(function(key,i){
+            res[key].forEach(function(element,j){
+              sequences.push(element.sequence);
+            });
+          })
+          _.unique(sequences).forEach(function(seq,i){
+            evidenceData.push({id:i,sequence:seq});
+          })
+          updateTables();
+          if (evidenceData.length){
+            $('#evidenceTable').animate({opacity:1},600);
+          }else{
+            $('#evidenceTable').animate({opacity:0},600);
+          }
+          },
+        error: function (jqXHR, textStatus) {
+          if (textStatus === 'error'){
+            $('#apiError').animate({'opacity':1},600);
+            $('#evidenceTable').animate({opacity:0},600);
+          }else{
+            console.log(jqXHR);
+          }
+        }
+      });
+    })();
+
+    (function(){
+    params = {
+      q: ['{"','gene names','":{"$regex":"^',searchString,'"}}'].join('')
     }
-  });
-})();
+
+    $.ajax({
+      dataType: 'jsonp',
+      url: proteomicsURL.slice(0,-1) + '/experiments?',
+      data: params,
+      success: function (res) {
+        $('#apiError').animate({'opacity':0},600);
+        pathData = [];
+        res.forEach(function(element,j){
+          pathData.push(_.extend(element,{id:element._id}));
+        });
+        updateTables();
+        if (pathData.length) {
+          $('#pathTable').animate({opacity:1},600);
+        }else{
+          $('#pathTable').animate({opacity:0},600);
+        }
+      },
+      error: function (jqXHR, textStatus) {
+        if (textStatus === 'error'){
+          $('#apiError').animate({'opacity':1},600);
+          $('#pathTable').animate({opacity:0},600);
+        }else{
+          console.log(jqXHR);
+        }
+      }
+    });
+    })();
+  }else{
+    evidenceData = [];
+    pathData = [];
+    updateTables();
+    $('#evidenceTable').animate({opacity:0},600);
+    $('#pathTable').animate({opacity:0},600);
+  }
 }
 
+handleSearchThrottled = _.throttle(handleSearch,250,{leading:false});
 
 
 /**
@@ -197,15 +292,25 @@ handleSearchMock = function handleSearchMock (searchString) {
     }
     $('#evidenceTable').animate({opacity:1},600);
     data = results;
-    updateTable();
+    updateTables();
   }else{
     $('#evidenceTable').animate({opacity:0},600);
     setTimeout( function () {
       data = results;
-      updateTable();
+      updateTables();
     },600);
   }
 };
+
+
+/**
+ * Utility function to resize the tables in the app depending on how much
+ * data is in them
+ */
+function resizeTables() {
+  var rows = (tables[level].getDataLength() > 19) ? 19 : tables[level].getDataLength() + 1;
+  $('#' + level).css('height',rows*25 + 10);
+}
 
 
 /**********************************
