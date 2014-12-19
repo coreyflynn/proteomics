@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://ec2-54-68-96-157.us-west-2.compute.amazonaws.com/:27017/proteomics');
+mongoose.connect('mongodb://localhost:27017/proteomics');
 
 
 mongoose.connection.on('open', function (ref) {

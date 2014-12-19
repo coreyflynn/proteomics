@@ -29,7 +29,7 @@ router.get('/', function(req, res) {
     var retCols   = {};
     var colsToAdd = [];
     var distinct  = req.query.d;
-
+	console.log("wat");
     try {query     = JSON.parse(req.query.q);}
     catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()});return;}
 
