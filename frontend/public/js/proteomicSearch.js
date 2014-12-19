@@ -41,17 +41,17 @@ searchBox = new Barista.Views.PertSearchBar({
  * after giving the code a bit of time to update the DOM
  */
 setTimeout(function(){
-  $('input.typeahead').on('keypress',function(e){
-    if(e.keyCode == 13) {
+  $('input.typeahead').bind('input propertychange change',function(e){
+    // if(e.keyCode == 13) {
       console.log('fdsa')
       handleSearch(searchBox.get_val());
-    }
+    // }
   });
 
   $('body').on('typeahead:selected',function(e,suggestion,dataset){
     handleSearch(suggestion.value);
   })
-},100);
+},1000);
 
 /*****************
  * table setup *
@@ -85,7 +85,7 @@ $('#apiError').css('opacity',0);
 $('#evidenceTable').css('opacity',0);
 
 // try to make a call to the proteomics API and let the user know if it fails
-$.ajax({
+(function(){$.ajax({
   dataType: 'jsonp',
   url: proteomicsURL,
   data: {q:'{"gene names":"ACTB"}',d:'gene names'},
@@ -96,7 +96,7 @@ $.ajax({
       console.log(jqXHR);
     }
   }
-});
+});})();
 
 /*********************
  * Utility Functions *
@@ -142,9 +142,10 @@ updateTable = function updateTable () {
  * @param {string} e the string that should be searched
  */
 handleSearch = function handleSearch (searchString) {
+  (function(){
   params = {
     q: ['{"','gene names','":{"$regex":"^',searchString,'"}}'].join(''),
-    d: 'sequence',
+    f: '{"sequence":1}',
     col: '["evidence"]'
   }
 
@@ -154,10 +155,16 @@ handleSearch = function handleSearch (searchString) {
     data: params,
     success: function (res) {
       $('#apiError').animate({'opacity':0},600);
+      var sequences = [];
       evidenceData = [];
       console.log(res);
-      res.forEach(function(element,i){
-        evidenceData.push({id:i, sequence:element});
+      _.keys(res).forEach(function(key,i){
+        res[key].forEach(function(element,j){
+          sequences.push(element.sequence);
+        });
+      })
+      _.unique(sequences).forEach(function(seq,i){
+        evidenceData.push({id:i,sequence:seq});
       })
       updateTable();
       $('#evidenceTable').animate({opacity:1},600);
@@ -171,6 +178,7 @@ handleSearch = function handleSearch (searchString) {
       }
     }
   });
+})();
 }
 
 
