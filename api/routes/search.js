@@ -56,11 +56,11 @@ router.get('/', function(req, res) {
         *    Callback: Print JSON results */
     /////////////////////////////////////////////////////
 
-    async.series([
+    // async.series([
 
     // Step 1 - Make DB calls in parallel
     /////////////////////////////////////
-    function (outerCB) {
+    // function (outerCB) {
     async.parallel([
 
     // EVIDENCE //
@@ -132,55 +132,98 @@ router.get('/', function(req, res) {
         }
     ],
 
-    // All DB calls made - proceed to step 2
-        function (error) {
-            if(error)
-                console.log(error);
-            outerCB();
-        })
+    // // All DB calls made - proceed to step 2
+    //     function (error,results) {
+    //         if(error)
+    //             console.log(error);
+    //
+    //         outerCB();
+    //     })
+    //
+    // },
+    //
+    // // Step 2 - Make array unique
+    // /////////////////////////////
+    // function (outerCB) {
+    //   if (distinct != null) {
+    //
+    //         // Make array unique, then alphabetize.
+    //         results = results.unique();
+    //         results.sort(function(a, b) {
+    //             if (a.toLowerCase() < b.toLowerCase()) return -1;
+    //             if (a.toLowerCase() > b.toLowerCase()) return 1;
+    //             return 0;
+    //         });
+    //
+    //         // Check regex one more time to remove arrayed objects.
+    //         for (var key in query) {
+    //
+    //             // Is it a regex or a string?
+    //             if (typeof query[key] == 'string')
+    //                 var regexp = new RegExp(query[key]);
+    //             else
+    //                 var regexp = new RegExp(query[key]['$regex']);
+    //
+    //     var index;
+    //             for (index = 0; index < results.length; index++) {
+    //                 if (!regexp.test(results[index])) {
+    //                     results.splice(index, 1); index--;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //         outerCB();
+    // }
 
-    },
-
-    // Step 2 - Make array unique
-    /////////////////////////////
-    function (outerCB) {
-      if (distinct != null) {
-
-            // Make array unique, then alphabetize.
-            results = results.unique();
-            results.sort(function(a, b) {
-                if (a.toLowerCase() < b.toLowerCase()) return -1;
-                if (a.toLowerCase() > b.toLowerCase()) return 1;
-                return 0;
-            });
-
-            // Check regex one more time to remove arrayed objects.
-            for (var key in query) {
-
-                // Is it a regex or a string?
-                if (typeof query[key] == 'string')
-                    var regexp = new RegExp(query[key]);
-                else
-                    var regexp = new RegExp(query[key]['$regex']);
-
-        var index;
-                for (index = 0; index < results.length; index++) {
-                    if (!regexp.test(results[index])) {
-                        results.splice(index, 1); index--;
-                    }
-                }
-            }
-        }
-            outerCB();
-    }
-
-    ],
+    // ],
 
     // Callback - print JSON results
     ////////////////////////////////
-    function (error) {
+    function (error,asyncResults) {
+        var results;
         if(error)
             console.log(error);
+
+        /**
+         * if the returned results are arrays, concatenate them and return them.
+         Otherwise, package the results up as an object
+         */
+
+        if (asyncResults[0].constructor === Array){
+          results = [];
+          asyncResults.forEach(function(res){
+            results = results.concat(res);
+          });
+          results = results.unique();
+          results.sort(function(a, b) {
+              if (a.toLowerCase() < b.toLowerCase()) return -1;
+              if (a.toLowerCase() > b.toLowerCase()) return 1;
+              return 0;
+          });
+          // Check regex one more time to remove arrayed objects.
+          for (var key in query) {
+
+            // Is it a regex or a string?
+            if (typeof query[key] == 'string'){
+                var regexp = new RegExp(query[key],'i');
+            }else{
+              var regexp = new RegExp(query[key]['$regex'],'i');
+            }
+
+            var matches = [];
+            results.forEach(function(res){
+              if (regexp.test(res)) {
+                matches.push(res)
+              }
+            });
+            results = matches;
+          }
+        }else{
+          results = {};
+          asyncResults.forEach(function(res){
+            for (var attr in res) { results[attr] = res[attr]; }
+          });
+        }
         res.jsonp(results);
     });
 
