@@ -58,7 +58,4 @@ q  (mandatory): ex - q={"gene names":"ACTC"}
 f   (optional): ex - f={"protein names":1,"_id":0}
                 An object containing boolean values of whether or not to include said fields. Defaults to
                 showing all fields.
-d   (optional): ex - d=gene names
-                DOES NOT USE QUOTES. Overrides f param, returns only given field, and only distinct
-                values of that field.
 ```
