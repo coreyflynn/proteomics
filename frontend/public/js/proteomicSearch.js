@@ -1,5 +1,5 @@
-var data = [],
-    dataView,
+var evidenceData = [],
+    evidenceDataView,
     datumLists = {},
     handleSearch,
     handleSearchErrorMock,
@@ -7,10 +7,10 @@ var data = [],
     proteomicsURL,
     searchBox,
     searchString,
-    table,
-    tableColumns,
-    tableSorter,
-    tableOptions;
+    evidenceTable,
+    evidenceTtableColumns,
+    evidenceTtableSorter,
+    evidenceTtableOptions;
 
 // Set up the default entry point for API calls
 proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
@@ -42,7 +42,8 @@ searchBox = new Barista.Views.PertSearchBar({
  */
 setTimeout(function(){
   $('input.typeahead').on('keypress',function(e){
-    if(e.which == 13) {
+    if(e.keyCode == 13) {
+      console.log('fdsa')
       handleSearch(searchBox.get_val());
     }
   });
@@ -55,23 +56,25 @@ setTimeout(function(){
 /*****************
  * table setup *
  *****************/
-dataView = new Slick.Data.DataView({ inlineFilters: true });
+evidenceDataView = new Slick.Data.DataView({ inlineFilters: true });
 
-tableColumns = [
-  { id: "ID", name: "ID", field:"id",sortable: true},
-  { id: "value", name: "Value", field:"value",sortable: true},
+evidenceTableColumns = [
+  { id: "sequence", name: "Sequence", field:"sequence",sortable: true},
 ];
 
-tableOptions = {
+evidenceTableOptions = {
   enableColumnReorder: false,
   multiColumnSort: true,
   forceFitColumns: true,
 };
 
-table = new Slick.Grid('#resultTable', dataView, tableColumns, tableOptions);
+evidenceTable = new Slick.Grid('#evidenceTable',
+  evidenceDataView,
+  evidenceTableColumns,
+  evidenceTableOptions);
 
-table.onSort.subscribe(function (e, args) {
-    tableSorter(e,args);
+evidenceTable.onSort.subscribe(function (e, args) {
+    evidenceTableSorter(e,args);
   });
 
 
@@ -79,7 +82,7 @@ table.onSort.subscribe(function (e, args) {
  * App setup *
  *************/
 $('#apiError').css('opacity',0);
-$('#resultTable').css('opacity',0);
+$('#evidenceTable').css('opacity',0);
 
 // try to make a call to the proteomics API and let the user know if it fails
 $.ajax({
@@ -104,9 +107,9 @@ $.ajax({
  * @param {event} e    the event passed to the sorter
  * @param {opbject} args the arguments passed to the sorter from slickgrid
  */
-tableSorter = function tableSorter (e, args){
+evidenceTableSorter = function evidenceTableSorter (e, args){
   var cols = args.sortCols;
-  data.sort(function (dataRow1, dataRow2) {
+  evidenceData.sort(function (dataRow1, dataRow2) {
     for (var i = 0, l = cols.length; i < l; i++) {
       var field = cols[i].sortCol.field;
       var sign = cols[i].sortAsc ? 1 : -1;
@@ -126,35 +129,51 @@ tableSorter = function tableSorter (e, args){
  * Wrapper function around data view updates
  */
 updateTable = function updateTable () {
-  dataView.beginUpdate();
-  dataView.setItems(data);
-  dataView.endUpdate();
-  table.invalidate();
-  table.render();
+
+  evidenceDataView.beginUpdate();
+  evidenceDataView.setItems(evidenceData);
+  evidenceDataView.endUpdate();
+  evidenceTable.invalidate();
+  evidenceTable.render();
 }
 
 /**
- * Utility to parse the input into the search box only when the user
- * hits the enter key
+ * Utility to handle search strings input into the search box
  * @param {string} e the string that should be searched
  */
 handleSearch = function handleSearch (searchString) {
-  params = {q: ['{"','gene names','":{"$regex":"^',searchString,'", "$options":"i"}}'].join('')}
+  params = {
+    q: ['{"','gene names','":{"$regex":"^',searchString,'"}}'].join(''),
+    d: 'sequence',
+    col: '["evidence"]'
+  }
 
   $.ajax({
     dataType: 'jsonp',
     url: proteomicsURL,
     data: params,
-    success: function (res) { console.log(res);},
+    success: function (res) {
+      $('#apiError').animate({'opacity':0},600);
+      evidenceData = [];
+      console.log(res);
+      res.forEach(function(element,i){
+        evidenceData.push({id:i, sequence:element});
+      })
+      updateTable();
+      $('#evidenceTable').animate({opacity:1},600);
+      },
     error: function (jqXHR, textStatus) {
       if (textStatus === 'error'){
         $('#apiError').animate({'opacity':1},600);
+        $('#evidenceTable').animate({opacity:0},600);
       }else{
         console.log(jqXHR);
       }
     }
   });
 }
+
+
 
 /**
  * Utility function to mock the results of a query typed into the search searchbox
@@ -168,11 +187,11 @@ handleSearchMock = function handleSearchMock (searchString) {
     for (_i = 0; _i < 1000; _i++){
       results.push({id: 'MockData' + Math.round(Math.random() * 1000000000), value: Math.random()});
     }
-    $('#resultTable').animate({opacity:1},600);
+    $('#evidenceTable').animate({opacity:1},600);
     data = results;
     updateTable();
   }else{
-    $('#resultTable').animate({opacity:0},600);
+    $('#evidenceTable').animate({opacity:0},600);
     setTimeout( function () {
       data = results;
       updateTable();
