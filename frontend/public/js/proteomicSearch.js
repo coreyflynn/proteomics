@@ -38,8 +38,8 @@ searchBox = new Barista.Views.PertSearchBar({
   placeholder: 'search by gene',
   datasets: [
     Barista.Datasets.ProteomicsGeneNames,
-    // Barista.Datasets.ProteomicsProteinNames,
-    // Barista.Datasets.ProteomicsModificationNames,
+    Barista.Datasets.ProteomicsProteinNames,
+    Barista.Datasets.ProteomicsModificationNames,
   ]
 });
 
@@ -192,10 +192,10 @@ handleSearch = function handleSearch (e) {
     var fieldMap = {
       '': 'gene names',
       Gene:'gene names',
-      Modification: 'modifications'
+      Modification: 'modifications',
+      Protein: 'protein names'
     }
 
-    // (function(e){
       params = {
         q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join(''),
         f: '{"sequence":1}',
@@ -234,9 +234,8 @@ handleSearch = function handleSearch (e) {
           }
         }
       });
-    // })();
 
-    (function(){
+
     params = {
       q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join('')
     }
@@ -267,7 +266,7 @@ handleSearch = function handleSearch (e) {
         }
       }
     });
-    })();
+
   }else{
     evidenceData = [];
     pathData = [];
@@ -323,221 +322,215 @@ function resizeTables() {
  * Wrapper function to add custom datasets to Barista so our search
  * box can use them
  */
-// function addDataset(name, field, type, color){
-//   var filterFunction = function(response){
-//     var datum_list = [];
-//     var auto_data = [];
-//     var object_map = {};
-//
-//     response.forEach(function(element){
-//       auto_data.push(element);
-//       object_map[element] = element;
-//     });
-//
-//     // make sure we only show unique items
-//     auto_data = _.uniq(auto_data);
-//
-//     // build a list of datum objects
-//     auto_data.forEach(function(item){
-//       var datum = {
-//         value: item,
-//         tokens: [item],
-//         data: object_map[item]
-//       }
-//       _.extend(datum,{
-//         type: type,
-//         search_column: field,
-//         color: color,
-//       });
-//       datum_list.push(datum);
-//     });
-//
-//     // return the processed list of datums for the autocomplete
-//     return datum_list;
-//   };
-//
-//   baseObject = {}
-//   baseObject[name] = {
-//     // only return 4 items at a time in the autocomplete dropdown
-//     limit: 4,
-//
-//     // provide a name for the default typeahead data source
-//     name: name,
-//
-//     // the template to render for all results
-//     template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
-//
-//     // use twitter's hogan.js to compile the template for the typeahead results
-//     engine: Hogan,
-//
-//     remote: {
-//       url: '',
-//
-//       replace: function(url, query){
-//         query = (query[0] === "*") ? query.replace("*",".*") : query;
-//         return [proteomicsURL,
-//           'q={"',field,'":{"$regex":"^',query,'", "$options":"i"}}',
-//           '&d=',field].join('')
-//       } ,
-//
-//       dataType: 'jsonp',
-//
-//       maxParallelRequests: 1,
-//
-//       filter: filterFunction
-//     }
-//   }
-//   console.log(baseObject)
-//   Barista.Datasets = _.extend(Barista.Datasets,baseObject);
-// }
+function addDataset(name, field, type, color){
+  var filterFunction = function(response){
+    var datum_list = [];
+    var auto_data = [];
+    var object_map = {};
+
+    response.forEach(function(element){
+      auto_data.push(element);
+      object_map[element] = element;
+    });
+
+    // make sure we only show unique items
+    auto_data = _.uniq(auto_data);
+
+    // build a list of datum objects
+    auto_data.forEach(function(item){
+      var datum = {
+        value: item,
+        tokens: [item],
+        data: object_map[item]
+      }
+      _.extend(datum,{
+        type: type,
+        search_column: field,
+        color: color,
+      });
+      datum_list.push(datum);
+    });
+
+    // return the processed list of datums for the autocomplete
+    return datum_list;
+  };
+
+  baseObject = {}
+  baseObject[name] = {
+    // only return 4 items at a time in the autocomplete dropdown
+    limit: 2,
+
+    // provide a name for the default typeahead data source
+    name: name,
+
+    // the template to render for all results
+    template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
+
+    // use twitter's hogan.js to compile the template for the typeahead results
+    engine: Hogan,
+
+    remote: {
+      url: '',
+
+      replace: function(url, query){
+        query = (query[0] === "*") ? query.replace("*",".*") : query;
+        return [proteomicsURL,
+          'q={"',field,'":{"$regex":"^',query,'", "$options":"i"}}',
+          '&d=',field].join('')
+      } ,
+
+      dataType: 'jsonp',
+
+      filter: filterFunction
+    }
+  }
+  console.log(baseObject)
+  Barista.Datasets = _.extend(Barista.Datasets,baseObject);
+}
 
 function configureDatasets() {
-  // addDataset('ProteomicsGeneNames','gene names','Gene','#00ccff');
-  // addDataset('ProteomicsProteinNames','proteins','Protein','#ff66cc');
-  // addDataset('ProteomicsModificationNames','modifications','Modification','#996600');
+  addDataset('ProteomicsGeneNames','gene names','Gene','#00ccff');
+  addDataset('ProteomicsProteinNames','proteins','Protein','#ff66cc');
+  addDataset('ProteomicsModificationNames','modifications','Modification','#996600');
 
-  (function(){
-      var geneNameFilter = function(response){
-        var datum_list = [];
-        var auto_data = [];
-        var object_map = {};
+  //   var geneNameFilter = function(response){
+  //     var datum_list = [];
+  //     var auto_data = [];
+  //     var object_map = {};
+  //
+  //     // for each item, pull out its cell_id and use that for the
+  //     // autocomplete value. Build a datum of other relevant data
+  //     // for use in suggestion displays
+  //     response.forEach(function(element){
+  //       auto_data.push(element);
+  //       object_map[element] = element;
+  //     });
+  //
+  //     // make sure we only show unique items
+  //     auto_data = _.uniq(auto_data);
+  //
+  //
+  //     // build a list of datum objects
+  //     auto_data.forEach(function(item){
+  //       var datum = {
+  //         value: item,
+  //         tokens: [item],
+  //         data: object_map[item]
+  //       }
+  //       _.extend(datum,{
+  //         type: 'Gene',
+  //         search_column: 'gene names',
+  //         color: '#00ccff',
+  //       });
+  //       datum_list.push(datum);
+  //     });
+  //
+  //     // return the processed list of datums for the autocomplete
+  //     return datum_list;
+  //   }
+  //
+  //
+  //   Barista.Datasets = _.extend(Barista.Datasets,
+  //   {ProteomicsGeneNames:
+  //     {
+  //   		// only return 4 items at a time in the autocomplete dropdown
+  //   		limit: 4,
+  //
+  //   		// provide a name for the default typeahead data source
+  //   		name: 'ProteomicsGeneNames',
+  //
+  //   		// the template to render for all results
+  //   		template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
+  //
+  //   		// use twitter's hogan.js to compile the template for the typeahead results
+  //   		engine: Hogan,
+  //
+  //   		remote: {
+  //   			url: '',
+  //
+  //   			replace: function(url, query){
+  //   				query = (query[0] === "*") ? query.replace("*",".*") : query;
+  //   				return [proteomicsURL,
+  //   					'q={"','gene names','":{"$regex":"^',query,'", "$options":"i"}}',
+  //   					'&d=','gene names'].join('')
+  //   			} ,
+  //
+  //   			dataType: 'jsonp',
+  //
+  //
+  //
+  //   			filter: geneNameFilter
+  //   		}
+  //   	}
+  //   }
+  // );
 
-        // for each item, pull out its cell_id and use that for the
-        // autocomplete value. Build a datum of other relevant data
-        // for use in suggestion displays
-        response.forEach(function(element){
-          auto_data.push(element);
-          object_map[element] = element;
-        });
-
-        // make sure we only show unique items
-        auto_data = _.uniq(auto_data);
-
-
-        // build a list of datum objects
-        auto_data.forEach(function(item){
-          var datum = {
-            value: item,
-            tokens: [item],
-            data: object_map[item]
-          }
-          _.extend(datum,{
-            type: 'Gene',
-            search_column: 'gene names',
-            color: '#00ccff',
-          });
-          datum_list.push(datum);
-        });
-
-        // return the processed list of datums for the autocomplete
-        return datum_list;
-      }
-
-
-      Barista.Datasets = _.extend(Barista.Datasets,
-      {ProteomicsGeneNames:
-        {
-      		// only return 4 items at a time in the autocomplete dropdown
-      		limit: 4,
-
-      		// provide a name for the default typeahead data source
-      		name: 'ProteomicsGeneNames',
-
-      		// the template to render for all results
-      		template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
-
-      		// use twitter's hogan.js to compile the template for the typeahead results
-      		engine: Hogan,
-
-      		remote: {
-      			url: '',
-
-      			replace: function(url, query){
-      				query = (query[0] === "*") ? query.replace("*",".*") : query;
-      				return [proteomicsURL,
-      					'q={"','gene names','":{"$regex":"^',query,'", "$options":"i"}}',
-      					'&d=','gene names'].join('')
-      			} ,
-
-      			dataType: 'jsonp',
-
-            maxParallelRequests: 1,
-
-      			filter: geneNameFilter
-      		}
-      	}
-      }
-    );
-  })();
-
-  (function(){
-    Barista.Datasets = _.extend(Barista.Datasets,
-      {ProteomicsProteinNames:
-        {
-          // only return 4 items at a time in the autocomplete dropdown
-          limit: 4,
-
-          // provide a name for the default typeahead data source
-          name: 'ProteomicsProteinNames',
-
-          // the template to render for all results
-          template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
-
-          // use twitter's hogan.js to compile the template for the typeahead results
-          engine: Hogan,
-
-          remote: {
-            url: '',
-
-            replace: function(url, query){
-              query = (query[0] === "*") ? query.replace("*",".*") : query;
-              return [proteomicsURL,
-                'q={"','protein names','":{"$regex":"^',query,'", "$options":"i"}}',
-                '&d=','protein names'].join('')
-            } ,
-
-            dataType: 'jsonp',
-
-            maxParallelRequests: 1,
-
-            filter: function(response){
-              datumLists.Modifications = [];
-              var auto_data = [];
-              var object_map = {};
-
-              // for each item, pull out its cell_id and use that for the
-              // autocomplete value. Build a datum of other relevant data
-              // for use in suggestion displays
-              response.forEach(function(element){
-                auto_data.push(element);
-                object_map[element] = element;
-              });
-
-              // make sure we only show unique items
-              auto_data = _.uniq(auto_data);
-
-
-              // build a list of datum objects
-              auto_data.forEach(function(item){
-                var datum = {
-                  value: item,
-                  tokens: [item],
-                  data: object_map[item]
-                }
-                _.extend(datum,{
-                  type: 'Protein',
-                  search_column: 'protein names',
-                  color: '#ff66cc',
-                });
-                datumLists.Modifications.push(datum);
-              });
-
-              // return the processed list of datums for the autocomplete
-              return datumLists.Modifications;
-            }
-          }
-        }
-      }
-    );
-  })();
+  // Barista.Datasets = _.extend(Barista.Datasets,
+  //   {ProteomicsProteinNames:
+  //     {
+  //       // only return 4 items at a time in the autocomplete dropdown
+  //       limit: 4,
+  //
+  //       // provide a name for the default typeahead data source
+  //       name: 'ProteomicsProteinNames',
+  //
+  //       // the template to render for all results
+  //       template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
+  //
+  //       // use twitter's hogan.js to compile the template for the typeahead results
+  //       engine: Hogan,
+  //
+  //       remote: {
+  //         url: '',
+  //
+  //         replace: function(url, query){
+  //           query = (query[0] === "*") ? query.replace("*",".*") : query;
+  //           return [proteomicsURL,
+  //             'q={"','protein names','":{"$regex":"^',query,'", "$options":"i"}}',
+  //             '&d=','protein names'].join('')
+  //         } ,
+  //
+  //         dataType: 'jsonp',
+  //
+  //
+  //
+  //         filter: function(response){
+  //           datumLists.Modifications = [];
+  //           var auto_data = [];
+  //           var object_map = {};
+  //
+  //           // for each item, pull out its cell_id and use that for the
+  //           // autocomplete value. Build a datum of other relevant data
+  //           // for use in suggestion displays
+  //           response.forEach(function(element){
+  //             auto_data.push(element);
+  //             object_map[element] = element;
+  //           });
+  //
+  //           // make sure we only show unique items
+  //           auto_data = _.uniq(auto_data);
+  //
+  //
+  //           // build a list of datum objects
+  //           auto_data.forEach(function(item){
+  //             var datum = {
+  //               value: item,
+  //               tokens: [item],
+  //               data: object_map[item]
+  //             }
+  //             _.extend(datum,{
+  //               type: 'Protein',
+  //               search_column: 'protein names',
+  //               color: '#ff66cc',
+  //             });
+  //             datumLists.Modifications.push(datum);
+  //           });
+  //
+  //           // return the processed list of datums for the autocomplete
+  //           return datumLists.Modifications;
+  //         }
+  //       }
+  //     }
+  //   }
+  // );
 }
