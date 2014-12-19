@@ -28,7 +28,7 @@ router.get('/', function(req, res) {
     var query     = {};
     var retCols   = {};
     var colsToAdd = [];
-    var distinct   = req.query.d;
+    var distinct  = req.query.d;
 
     try {query     = JSON.parse(req.query.q);}
     catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()});return;}
@@ -66,9 +66,11 @@ router.get('/', function(req, res) {
     // EVIDENCE //
         function (callback) {
             if (colsToAdd.indexOf('evidence') > -1) {
-                if (Object.prototype.toString.call(results) === '[object Array]') {
+                if (distinct != null) {
                     evidence.distinct(distinct, query, function (error, queryResults) {
-                        results = results.push(queryResults);callback();
+                        try{results = results.concat(queryResults);}
+                        catch (e) {console.log("Problem with concat...");}
+                        callback();
                     });
                 }
                 else {
@@ -83,9 +85,11 @@ router.get('/', function(req, res) {
     // MODIFICATION SPECIFIC PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
-                if (Object.prototype.toString.call( results ) === '[object Array]') {
+                if (distinct != null) {
                     modspecpeptides.distinct(distinct, query, function (error, queryResults) {
-                        results = results.push(queryResults);callback();
+                        try{results = results.concat(queryResults);}
+                        catch (e) {console.log("Problem with concat...");}
+                        callback();
                     });
                 }
                 else {
@@ -100,9 +104,11 @@ router.get('/', function(req, res) {
     // PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('peptides') > -1) {
-                if (Object.prototype.toString.call( results ) === '[object Array]') {
+                if (distinct != null) {
                     peptides.distinct(distinct, query, function (error, queryResults) {
-                        results = results.push(queryResults);callback();
+                        try{results = results.concat(queryResults);}
+                        catch (e) {console.log("Problem with concat...");}
+                        callback();
                     });
                 }
                 else {
@@ -117,9 +123,11 @@ router.get('/', function(req, res) {
     // PROTEIN GROUPS //
         function (callback) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
-                if (Object.prototype.toString.call( results ) != '[object Array]') {
+                if (distinct != null) {
                     proteingroups.distinct(distinct, query, function (error, queryResults) {
-                        results = results.push(queryResults);callback();
+                        try{results = results.concat(queryResults);}
+                        catch (e) {console.log("Problem with concat...");}
+                        callback();
                     });
                 }
                 else {

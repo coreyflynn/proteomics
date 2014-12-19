@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "express": "~3.4.8",
+    "grun": "^0.2.0",
     "jade": "~1.1.5"
   },
   "devDependencies": {
