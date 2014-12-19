@@ -1,0 +1,17 @@
+doctype html
+html
+  head
+    title Proteomics Crawler
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    h1 Query database
+    p
+      | From 
+      select(name='collection')
+        - var cols = collections
+          each col in cols
+            option= col
+      |  select all where 
+      input(type="text", name="key")
+      |  = 
+      input(type="text", name="value")
