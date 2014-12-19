@@ -66,14 +66,14 @@ router.get('/', function(req, res) {
     // EVIDENCE //
         function (callback) {
             if (colsToAdd.indexOf('evidence') > -1) {
-                if (Object.prototype.toString.call( results ) != '[object Array]') {
-                    evidence.find(query, retCols, function (error, queryResults) {
-                        results.evidence = queryResults;callback();
+                if (Object.prototype.toString.call(results) === '[object Array]') {
+                    evidence.distinct(distinct, query, function (error, queryResults) {
+                        results = results.push(queryResults);callback();
                     });
                 }
                 else {
-                    evidence.distinct(distinct, query, function (error, queryResults) {
-                        results = results.concat(queryResults);callback();
+                    evidence.find(query, retCols, function (error, queryResults) {
+                        results.evidence = queryResults;callback();
                     });
                 }
             }
@@ -83,14 +83,14 @@ router.get('/', function(req, res) {
     // MODIFICATION SPECIFIC PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
-                if (Object.prototype.toString.call( results ) != '[object Array]') {
-                    modspecpeptides.find(query, retCols, function (error, queryResults) {
-                        results.modSpecPeptides = queryResults;callback();
+                if (Object.prototype.toString.call( results ) === '[object Array]') {
+                    modspecpeptides.distinct(distinct, query, function (error, queryResults) {
+                        results = results.push(queryResults);callback();
                     });
                 }
                 else {
-                    modspecpeptides.distinct(distinct, query, function (error, queryResults) {
-                        results = results.concat(queryResults);callback();
+                    modspecpeptides.find(query, retCols, function (error, queryResults) {
+                        results.modSpecPeptides = queryResults;callback();
                     });
                 }
             }
@@ -100,14 +100,14 @@ router.get('/', function(req, res) {
     // PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('peptides') > -1) {
-                if (Object.prototype.toString.call( results ) != '[object Array]') {
-                    peptides.find(query, retCols, function (error, queryResults) {
-                        results.peptides = queryResults;callback();
+                if (Object.prototype.toString.call( results ) === '[object Array]') {
+                    peptides.distinct(distinct, query, function (error, queryResults) {
+                        results = results.push(queryResults);callback();
                     });
                 }
                 else {
-                    peptides.distinct(distinct, query, function (error, queryResults) {
-                        results = results.concat(queryResults);callback();
+                    peptides.find(query, retCols, function (error, queryResults) {
+                        results.peptides = queryResults;callback();
                     });
                 }
             }
@@ -118,13 +118,13 @@ router.get('/', function(req, res) {
         function (callback) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
                 if (Object.prototype.toString.call( results ) != '[object Array]') {
-                    proteingroups.find(query, retCols, function (error, queryResults) {
-                        results.proteinGroups = queryResults;callback();
+                    proteingroups.distinct(distinct, query, function (error, queryResults) {
+                        results = results.push(queryResults);callback();
                     });
                 }
                 else {
-                    proteingroups.distinct(distinct, query, function (error, queryResults) {
-                        results = results.concat(queryResults);callback();
+                    proteingroups.find(query, retCols, function (error, queryResults) {
+                        results.proteinGroups = queryResults;callback();
                     });
                 }
             }
@@ -163,7 +163,7 @@ router.get('/', function(req, res) {
                 else
                     var regexp = new RegExp(query[key]['$regex']);
 
-		var index;
+        var index;
                 for (index = 0; index < results.length; index++) {
                     if (!regexp.test(results[index])) {
                         results.splice(index, 1); index--;
