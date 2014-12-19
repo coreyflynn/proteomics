@@ -66,7 +66,7 @@ router.get('/', function(req, res) {
     // EVIDENCE //
         function (callback) {
             if (colsToAdd.indexOf('evidence') > -1) {
-                if (distinct == null) {
+                if (Object.prototype.toString.call( results ) != '[object Array]') {
                     evidence.find(query, retCols, function (error, queryResults) {
                         results.evidence = queryResults;callback();
                     });
@@ -83,7 +83,7 @@ router.get('/', function(req, res) {
     // MODIFICATION SPECIFIC PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
-                if (distinct == null) {
+                if (Object.prototype.toString.call( results ) != '[object Array]') {
                     modspecpeptides.find(query, retCols, function (error, queryResults) {
                         results.modSpecPeptides = queryResults;callback();
                     });
@@ -100,7 +100,7 @@ router.get('/', function(req, res) {
     // PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('peptides') > -1) {
-                if (distinct == null) {
+                if (Object.prototype.toString.call( results ) != '[object Array]') {
                     peptides.find(query, retCols, function (error, queryResults) {
                         results.peptides = queryResults;callback();
                     });
@@ -117,7 +117,7 @@ router.get('/', function(req, res) {
     // PROTEIN GROUPS //
         function (callback) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
-                if (distinct == null) {
+                if (Object.prototype.toString.call( results ) != '[object Array]') {
                     proteingroups.find(query, retCols, function (error, queryResults) {
                         results.proteinGroups = queryResults;callback();
                     });
