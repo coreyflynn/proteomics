@@ -68,7 +68,9 @@ router.get('/', function(req, res) {
             if (colsToAdd.indexOf('evidence') > -1) {
                 if (Object.prototype.toString.call(results) === '[object Array]') {
                     evidence.distinct(distinct, query, function (error, queryResults) {
-                        results = results.push(queryResults);callback();
+                        try{results = results.concat(queryResults);}
+                        catch (e) {console.log("Problem with concat...");}
+                        callback();
                     });
                 }
                 else {
@@ -85,7 +87,9 @@ router.get('/', function(req, res) {
             if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
                 if (Object.prototype.toString.call( results ) === '[object Array]') {
                     modspecpeptides.distinct(distinct, query, function (error, queryResults) {
-                        results = results.push(queryResults);callback();
+                        try{results = results.concat(queryResults);}
+                        catch (e) {console.log("Problem with concat...");}
+                        callback();
                     });
                 }
                 else {
@@ -102,7 +106,9 @@ router.get('/', function(req, res) {
             if (colsToAdd.indexOf('peptides') > -1) {
                 if (Object.prototype.toString.call( results ) === '[object Array]') {
                     peptides.distinct(distinct, query, function (error, queryResults) {
-                        results = results.push(queryResults);callback();
+                        try{results = results.concat(queryResults);}
+                        catch (e) {console.log("Problem with concat...");}
+                        callback();
                     });
                 }
                 else {
@@ -119,7 +125,9 @@ router.get('/', function(req, res) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
                 if (Object.prototype.toString.call( results ) != '[object Array]') {
                     proteingroups.distinct(distinct, query, function (error, queryResults) {
-                        results = results.push(queryResults);callback();
+                        try{results = results.concat(queryResults);}
+                        catch (e) {console.log("Problem with concat...");}
+                        callback();
                     });
                 }
                 else {
