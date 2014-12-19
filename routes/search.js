@@ -144,7 +144,6 @@ router.get('/', function(req, res) {
     // Step 2 - Make array unique
     /////////////////////////////
     function (outerCB) {
-      console.log (results);
       if (distinct != null) {
 
             // Make array unique, then alphabetize.
@@ -166,9 +165,7 @@ router.get('/', function(req, res) {
 
 		var index;
                 for (index = 0; index < results.length; index++) {
-		    console.log(index + " & " + results.length + " & testing " + results[index] + " against " + regexp);
                     if (!regexp.test(results[index])) {
-                        console.log("Killing " + results[index] + " from array...");
                         results.splice(index, 1); index--;
                     }
                 }
