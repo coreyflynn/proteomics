@@ -1,6 +1,12 @@
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://ec2-54-68-96-157.us-west-2.compute.amazonaws.com/:27017/proteomics');
+var PROTEOMICS_API_URL = process.env.PROTEOMICS_API_URL;
+if (PROTEOMICS_API_URL){
+  mongoose.connect('mongodb://' + PROTEOMICS_API_URL + ':27017/proteomics');
+}else{
+  mongoose.connect('mongodb://localhost:27017/proteomics');
+}
+
 
 
 mongoose.connection.on('open', function (ref) {
