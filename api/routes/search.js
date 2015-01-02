@@ -29,7 +29,7 @@ router.get('/', function(req, res) {
     var retCols   = {};
     var colsToAdd = [];
     var distinct  = req.query.d;
-	console.log("wat");
+
     try {query     = JSON.parse(req.query.q);}
     catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()});return;}
 
@@ -133,9 +133,10 @@ router.get('/', function(req, res) {
     ],
 
     // All DB calls made - proceed to step 2
-        function (error) {
+        function (error, data) {
             if(error)
                 console.log(error);
+            console.log(JSON.stringify(data));
             outerCB();
         })
 
