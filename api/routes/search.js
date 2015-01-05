@@ -136,7 +136,8 @@ router.get('/', function(req, res) {
         function (error, data) {
             if(error)
                 console.log(error);
-            outerCB(data);
+            results = data;
+            outerCB();
         })
 
     },
@@ -145,6 +146,13 @@ router.get('/', function(req, res) {
     /////////////////////////////
     function (outerCB) {
       if (distinct != null) {
+
+            //Smash inner arrays to one.
+            var index; var temp = [];
+            for (index = 0; index < results.length; index++) {
+                temp.concat(results[index]);
+            }
+            results = temp;
 
             // Make array unique, then alphabetize.
             results = results.unique();
