@@ -21,7 +21,7 @@ var evidenceData = [],
     pathDataView;
 
 // Set up the default entry point for API calls
-proteomicsURL = 'http://localhost:3000/search?';
+proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
 
 
 /*************************
