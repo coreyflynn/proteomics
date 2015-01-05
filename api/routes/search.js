@@ -178,11 +178,10 @@ router.get('/', function(req, res) {
 
     // Callback - print JSON results
     ////////////////////////////////
-    function (error, data) {
+    function (data, error) {
         if(error)
             console.log(error);
-        console.log(JSON.stringify(data));
-        res.jsonp(JSON.stringify(data));
+        res.jsonp(data);
     });
 
 });
