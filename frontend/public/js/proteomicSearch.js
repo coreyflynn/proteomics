@@ -358,7 +358,7 @@ function addDataset(name, field, type, color){
   baseObject = {}
   baseObject[name] = {
     // only return 4 items at a time in the autocomplete dropdown
-    limit: 2,
+    limit: 5,
 
     // provide a name for the default typeahead data source
     name: name,
