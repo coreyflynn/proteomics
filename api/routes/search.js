@@ -181,7 +181,8 @@ router.get('/', function(req, res) {
     function (error, data) {
         if(error)
             console.log(error);
-        res.jsonp(data);
+        console.log(JSON.stringify(data));
+        res.jsonp(JSON.stringify(data);
     });
 
 });
