@@ -136,8 +136,7 @@ router.get('/', function(req, res) {
         function (error, data) {
             if(error)
                 console.log(error);
-            console.log(JSON.stringify(data));
-            outerCB();
+            outerCB(data);
         })
 
     },
@@ -179,10 +178,10 @@ router.get('/', function(req, res) {
 
     // Callback - print JSON results
     ////////////////////////////////
-    function (error) {
+    function (error, data) {
         if(error)
             console.log(error);
-        res.jsonp(results);
+        res.jsonp(data);
     });
 
 });
