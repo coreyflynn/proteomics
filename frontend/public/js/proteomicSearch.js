@@ -212,8 +212,8 @@ handleSearch = function handleSearch (e) {
         success: function (res) {
           $('#apiError').animate({'opacity':0},600);
           var sequences = [],
-              seqCounts = [],
-              intenSums = [];
+              seqCounts = [];
+          intenSums     = [];
           evidenceData  = [];
 
           _.keys(res).forEach(function(key,i){
