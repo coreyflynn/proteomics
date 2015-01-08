@@ -220,8 +220,8 @@ handleSearch = function handleSearch (e) {
             });
           })
 
-          seqCounts = _.countBy(sequences, function (seq) {return seq;})
-          alert("sequences: " + sequences + " and counts: " + seqCounts);
+          seqCounts = _.countBy(sequences, function (seq) {return seq;});
+
           _.keys(seqCounts).forEach(function(seq,i){
             evidenceData.push({id:i,sequence:seq,count:seqCounts[seq]});
           })
