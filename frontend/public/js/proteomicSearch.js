@@ -62,6 +62,7 @@ pathDataView = new Slick.Data.DataView({ inlineFilters: true });
 
 evidenceTableColumns = [
   { id: "sequence", name: "Sequence", field:"sequence",sortable: true},
+  { id: "count", name: "Count", field:"count",sortable: true},
 ];
 pathTableColumns = [
   { id: "path", name: "File Path", field:"path",sortable: true},
@@ -169,6 +170,7 @@ pathTableSorter = function pathTableSorter (e, args){
  */
 updateTables = function updateTables () {
 
+
   evidenceDataView.beginUpdate();
   evidenceDataView.setItems(evidenceData);
   evidenceDataView.endUpdate();
@@ -208,17 +210,24 @@ handleSearch = function handleSearch (e) {
         data: params,
         success: function (res) {
           $('#apiError').animate({'opacity':0},600);
-          var sequences = [];
-          evidenceData = [];
+          var sequences = [],
+              evidenceData = [],
+              seqCounts = [];
+
           _.keys(res).forEach(function(key,i){
             res[key].forEach(function(element,j){
               sequences.push(element.sequence);
             });
           })
-          _.unique(sequences).forEach(function(seq,i){
-            evidenceData.push({id:i,sequence:seq});
+
+          seqCounts = _.countBy(sequences, function (seq) {return seq;})
+
+          _.keys(seqCounts).forEach(function(seq,i){
+            evidenceData.push({id:i,sequence:seq, count:seqCounts[seq]});
           })
+
           updateTables();
+          
           if (evidenceData.length){
             $('#evidenceTable').animate({opacity:1},600);
           }else{
@@ -358,7 +367,7 @@ function addDataset(name, field, type, color){
   baseObject = {}
   baseObject[name] = {
     // only return 4 items at a time in the autocomplete dropdown
-    limit: 5,
+    limit: 3,
 
     // provide a name for the default typeahead data source
     name: name,
@@ -390,147 +399,7 @@ function addDataset(name, field, type, color){
 
 function configureDatasets() {
   addDataset('ProteomicsGeneNames','gene names','Gene','#00ccff');
-  addDataset('ProteomicsProteinNames','proteins','Protein','#ff66cc');
+  addDataset('ProteomicsProteinNames','protein names','Protein','#ff66cc');
   addDataset('ProteomicsModificationNames','modifications','Modification','#996600');
 
-  //   var geneNameFilter = function(response){
-  //     var datum_list = [];
-  //     var auto_data = [];
-  //     var object_map = {};
-  //
-  //     // for each item, pull out its cell_id and use that for the
-  //     // autocomplete value. Build a datum of other relevant data
-  //     // for use in suggestion displays
-  //     response.forEach(function(element){
-  //       auto_data.push(element);
-  //       object_map[element] = element;
-  //     });
-  //
-  //     // make sure we only show unique items
-  //     auto_data = _.uniq(auto_data);
-  //
-  //
-  //     // build a list of datum objects
-  //     auto_data.forEach(function(item){
-  //       var datum = {
-  //         value: item,
-  //         tokens: [item],
-  //         data: object_map[item]
-  //       }
-  //       _.extend(datum,{
-  //         type: 'Gene',
-  //         search_column: 'gene names',
-  //         color: '#00ccff',
-  //       });
-  //       datum_list.push(datum);
-  //     });
-  //
-  //     // return the processed list of datums for the autocomplete
-  //     return datum_list;
-  //   }
-  //
-  //
-  //   Barista.Datasets = _.extend(Barista.Datasets,
-  //   {ProteomicsGeneNames:
-  //     {
-  //   		// only return 4 items at a time in the autocomplete dropdown
-  //   		limit: 4,
-  //
-  //   		// provide a name for the default typeahead data source
-  //   		name: 'ProteomicsGeneNames',
-  //
-  //   		// the template to render for all results
-  //   		template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
-  //
-  //   		// use twitter's hogan.js to compile the template for the typeahead results
-  //   		engine: Hogan,
-  //
-  //   		remote: {
-  //   			url: '',
-  //
-  //   			replace: function(url, query){
-  //   				query = (query[0] === "*") ? query.replace("*",".*") : query;
-  //   				return [proteomicsURL,
-  //   					'q={"','gene names','":{"$regex":"^',query,'", "$options":"i"}}',
-  //   					'&d=','gene names'].join('')
-  //   			} ,
-  //
-  //   			dataType: 'jsonp',
-  //
-  //
-  //
-  //   			filter: geneNameFilter
-  //   		}
-  //   	}
-  //   }
-  // );
-
-  // Barista.Datasets = _.extend(Barista.Datasets,
-  //   {ProteomicsProteinNames:
-  //     {
-  //       // only return 4 items at a time in the autocomplete dropdown
-  //       limit: 4,
-  //
-  //       // provide a name for the default typeahead data source
-  //       name: 'ProteomicsProteinNames',
-  //
-  //       // the template to render for all results
-  //       template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
-  //
-  //       // use twitter's hogan.js to compile the template for the typeahead results
-  //       engine: Hogan,
-  //
-  //       remote: {
-  //         url: '',
-  //
-  //         replace: function(url, query){
-  //           query = (query[0] === "*") ? query.replace("*",".*") : query;
-  //           return [proteomicsURL,
-  //             'q={"','protein names','":{"$regex":"^',query,'", "$options":"i"}}',
-  //             '&d=','protein names'].join('')
-  //         } ,
-  //
-  //         dataType: 'jsonp',
-  //
-  //
-  //
-  //         filter: function(response){
-  //           datumLists.Modifications = [];
-  //           var auto_data = [];
-  //           var object_map = {};
-  //
-  //           // for each item, pull out its cell_id and use that for the
-  //           // autocomplete value. Build a datum of other relevant data
-  //           // for use in suggestion displays
-  //           response.forEach(function(element){
-  //             auto_data.push(element);
-  //             object_map[element] = element;
-  //           });
-  //
-  //           // make sure we only show unique items
-  //           auto_data = _.uniq(auto_data);
-  //
-  //
-  //           // build a list of datum objects
-  //           auto_data.forEach(function(item){
-  //             var datum = {
-  //               value: item,
-  //               tokens: [item],
-  //               data: object_map[item]
-  //             }
-  //             _.extend(datum,{
-  //               type: 'Protein',
-  //               search_column: 'protein names',
-  //               color: '#ff66cc',
-  //             });
-  //             datumLists.Modifications.push(datum);
-  //           });
-  //
-  //           // return the processed list of datums for the autocomplete
-  //           return datumLists.Modifications;
-  //         }
-  //       }
-  //     }
-  //   }
-  // );
 }
