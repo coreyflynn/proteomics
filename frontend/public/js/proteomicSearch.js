@@ -63,6 +63,7 @@ pathDataView = new Slick.Data.DataView({ inlineFilters: true });
 evidenceTableColumns = [
   { id: "sequence", name: "Sequence", field:"sequence",sortable: true},
   { id: "count", name: "Count", field:"count",sortable: true},
+  { id: "intensity", name: "Intensity", field:"intensity",sortable: true},
 ];
 pathTableColumns = [
   { id: "path", name: "File Path", field:"path",sortable: true},
@@ -200,7 +201,7 @@ handleSearch = function handleSearch (e) {
 
       params = {
         q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join(''),
-        f: '{"sequence":1}',
+        f: '{"sequence":1,"intensity":1}',
         col: '["evidence"]'
       }
 
@@ -211,15 +212,16 @@ handleSearch = function handleSearch (e) {
         success: function (res) {
           $('#apiError').animate({'opacity':0},600);
           var sequences = [],
-              seqCounts = [];
-          evidenceData = [];
+              seqCounts = [],
+              intenSums = [];
+          evidenceData  = [];
 
           _.keys(res).forEach(function(key,i){
             res[key].forEach(function(element,j){
               sequences.push(element.sequence);
             });
           })
-
+          intenSums = _.groupBy(sequences, function (seq) {return seq;});
           seqCounts = _.countBy(sequences, function (seq) {return seq;});
 
           _.keys(seqCounts).forEach(function(seq,i){
