@@ -211,8 +211,8 @@ handleSearch = function handleSearch (e) {
         success: function (res) {
           $('#apiError').animate({'opacity':0},600);
           var sequences = [],
-              evidenceData = [],
               seqCounts = [];
+          evidenceData = [];
 
           _.keys(res).forEach(function(key,i){
             res[key].forEach(function(element,j){
@@ -227,7 +227,7 @@ handleSearch = function handleSearch (e) {
           })
 
           updateTables();
-          
+
           if (evidenceData.length){
             $('#evidenceTable').animate({opacity:1},600);
           }else{
