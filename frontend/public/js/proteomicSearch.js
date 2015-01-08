@@ -221,7 +221,7 @@ handleSearch = function handleSearch (e) {
               sequences.push(element.sequence);
             });
           })
-          intenSums = _.groupBy(sequences, function (seq) {return seq;});
+          intenSums = _.indexBy(res, 'sequence');
           seqCounts = _.countBy(sequences, function (seq) {return seq;});
 
           _.keys(seqCounts).forEach(function(seq,i){
