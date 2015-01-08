@@ -221,9 +221,9 @@ handleSearch = function handleSearch (e) {
           })
 
           seqCounts = _.countBy(sequences, function (seq) {return seq;})
-
+          alert("sequences: " + sequences + " and counts: " + seqCounts);
           _.keys(seqCounts).forEach(function(seq,i){
-            evidenceData.push({id:i,sequence:seq, count:seqCounts[seq]});
+            evidenceData.push({id:i,sequence:seq,count:seqCounts[seq]});
           })
 
           updateTables();
