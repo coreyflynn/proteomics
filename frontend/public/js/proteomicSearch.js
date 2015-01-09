@@ -224,6 +224,13 @@ handleSearch = function handleSearch (e) {
           intenSums = _.indexBy(res, 'sequence');
           seqCounts = _.countBy(sequences, function (seq) {return seq;});
 
+          var toPrint = "";
+          _.keys(intenSums).forEach(function(seq, i){
+            toPrint += "- " + i + ": " + seq + "\n";
+          })
+
+          alert(toPrint);
+
           _.keys(seqCounts).forEach(function(seq,i){
             evidenceData.push({id:i,sequence:seq,count:seqCounts[seq]});
           })
