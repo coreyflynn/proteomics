@@ -211,20 +211,29 @@ handleSearch = function handleSearch (e) {
         data: params,
         success: function (res) {
           $('#apiError').animate({'opacity':0},600);
-          var sequences = [],
+          var elements = [],
               seqCounts = [];
           intenSums     = [];
           evidenceData  = [];
 
           _.keys(res).forEach(function(key,i){
             res[key].forEach(function(element,j){
-              sequences.push(element.sequence);
+              elements.push(element);
             });
           })
-          intenSums = _.groupBy(res, function(obj) {
-		return obj.sequence;
-	  });
-          seqCounts = _.countBy(sequences, function (seq) {return seq;});
+
+          seqCounts = _.countBy(elements, function (element) {
+            return element.sequence;
+          });
+
+          // Intensity sum array creation
+          intenSums = _.groupBy(elements, function(element) {
+            return element.sequence;
+          });
+
+          _.keys(intenSums).forEach(function(sequence){
+            intenSums[sequence] = _.reduce(intenSums[sequence], function(memo, num){return memo + num});
+          })
 
           var toPrint = "";
           _.keys(intenSums).forEach(function(seq, i){
