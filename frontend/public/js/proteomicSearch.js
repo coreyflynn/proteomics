@@ -221,7 +221,9 @@ handleSearch = function handleSearch (e) {
               sequences.push(element.sequence);
             });
           })
-          intenSums = _.indexBy(res, 'sequence');
+          intenSums = _.groupBy(res, function(obj) {
+		return obj.sequence;
+	  });
           seqCounts = _.countBy(sequences, function (seq) {return seq;});
 
           var toPrint = "";
