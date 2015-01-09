@@ -245,10 +245,8 @@ handleSearch = function handleSearch (e) {
             toPrint += "- " + i + ": " + seq + "\n";
           })
 
-          alert(toPrint);
-
           _.keys(seqCounts).forEach(function(seq,i){
-            evidenceData.push({id:i,sequence:seq,count:seqCounts[seq]});
+            evidenceData.push({id:i,sequence:seq,count:seqCounts[seq],intensity:intenSums[seq]});
           })
 
           updateTables();
