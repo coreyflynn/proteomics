@@ -232,7 +232,12 @@ handleSearch = function handleSearch (e) {
           });
 
           _.keys(intenSums).forEach(function(sequence){
-            intenSums[sequence] = _.reduce(intenSums[sequence], function(memo, num){return memo + num});
+            intenSums[sequence] = _.reduce(intenSums[sequence], function(memo, obj){
+              if (obj.intensity)
+                return memo + obj.intensity;
+              else
+                return memo + 0;
+            }, 0);
           })
 
           var toPrint = "";
