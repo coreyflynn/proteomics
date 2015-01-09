@@ -247,7 +247,7 @@ handleSearch = function handleSearch (e) {
           })
 
           _.keys(seqCounts).forEach(function(seq,i){
-            var avg = (seqCounts[seq]/intenSums[seq]);
+            var avg = (intenSums[seq]/seqCounts[seq]);
             evidenceData.push({id:i,sequence:seq,count:seqCounts[seq],totInten:intenSums[seq],avgInten:avg});
           })
 
