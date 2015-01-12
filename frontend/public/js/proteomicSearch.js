@@ -62,6 +62,7 @@ pathDataView = new Slick.Data.DataView({ inlineFilters: true });
 
 evidenceTableColumns = [
   { id: "sequence", name: "Sequence", field:"sequence",sortable: true},
+  { id: "modifications", name: "Modifications", field:"modifications",sortable: true},
   { id: "count", name: "Count", field:"count",sortable: true},
   { id: "totInten", name: "Total Intensity", field:"totInten",sortable: true},
   { id: "avgInten", name: "Average Intensity", field:"avgInten",sortable: true},
@@ -202,7 +203,7 @@ handleSearch = function handleSearch (e) {
 
       params = {
         q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join(''),
-        f: '{"sequence":1,"intensity":1}',
+        f: '{"sequence":1,"intensity":1,"modifications":1}',
         col: '["evidence"]'
       }
 
@@ -215,6 +216,7 @@ handleSearch = function handleSearch (e) {
           var elements = [],
               seqCounts = [];
           intenSums     = [];
+          mods          = [];
           evidenceData  = [];
 
           _.keys(res).forEach(function(key,i){
@@ -228,9 +230,10 @@ handleSearch = function handleSearch (e) {
           });
 
           // Intensity sum array creation
-          intenSums = _.groupBy(elements, function(element) {
+          intenSums = _.groupBy(elements, function (element) {
             return element.sequence;
           });
+          alert("Stage 1: " + JSON.stringify(intenSums));
 
           _.keys(intenSums).forEach(function(sequence){
             intenSums[sequence] = _.reduce(intenSums[sequence], function(memo, obj){
@@ -241,10 +244,7 @@ handleSearch = function handleSearch (e) {
             }, 0);
           })
 
-          var toPrint = "";
-          _.keys(intenSums).forEach(function(seq, i){
-            toPrint += "- " + i + ": " + seq + "\n";
-          })
+          alert("Stage 2: " + JSON.stringify(intenSums));
 
           _.keys(seqCounts).forEach(function(seq,i){
             var avg = (intenSums[seq]/seqCounts[seq]);
