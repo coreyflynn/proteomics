@@ -242,9 +242,10 @@ handleSearch = function handleSearch (e) {
               else
                 return memo + 0;
             }, 0);
+            mods[sequence] = _.union(intenSums[modifications], mods[sequence]);
           })
 
-          alert("Stage 2: " + JSON.stringify(intenSums));
+          alert("Stage 2: " + JSON.stringify(mods));
 
           _.keys(seqCounts).forEach(function(seq,i){
             var avg = (intenSums[seq]/seqCounts[seq]);
