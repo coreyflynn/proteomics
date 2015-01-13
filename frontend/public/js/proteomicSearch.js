@@ -237,11 +237,14 @@ handleSearch = function handleSearch (e) {
 
           _.keys(intenSums).forEach(function(sequence){
             mods[sequence] = _.reduce(intenSums[sequence], function(memo, obj){
-              if (obj.modifications)
+              if (obj.modifications) {
+                alert("Pushing " + obj.modifications);
                 return memo.push(obj.modifications);
+              }
               else
                 return memo;
             }, []);
+            alert("mods["+sequence+"]  is set to " + mods[sequence]);
           })
 
           _.keys(intenSums).forEach(function(sequence){
@@ -252,8 +255,6 @@ handleSearch = function handleSearch (e) {
                 return memo + 0;
             }, 0);
           })
-
-          alert("Stage 2: " + JSON.stringify(mods));
 
           _.keys(seqCounts).forEach(function(seq,i){
             var avg = (intenSums[seq]/seqCounts[seq]);
