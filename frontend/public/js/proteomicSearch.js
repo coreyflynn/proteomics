@@ -237,14 +237,14 @@ handleSearch = function handleSearch (e) {
           alert("Stage 1: " + JSON.stringify(sequences));
 
           _.keys(sequences).forEach(function(sequence){
-            mods[sequence] = _.reduce(sequences[sequence], function(memo, obj){
-              if (obj.modifications) {
-                alert("Pushing " + obj.modifications);
-                return memo.push(obj.modifications);
-              }
-              else
-                return memo;
-            }, []);
+	    mods[sequence] = [];
+	    for (obj in sequences[sequence]){
+		if (sequences[sequence][obj].modifications){
+		    alert("We have " + sequences[sequence][obj].modifications);
+		    mods[sequence].push(sequences[sequence][obj].modifications);
+		}
+	    }
+	    mods[sequence] = _.uniq(mods[sequence]);
             alert("mods["+sequence+"]  is set to " + mods[sequence]);
           })
 
@@ -259,7 +259,7 @@ handleSearch = function handleSearch (e) {
 
           _.keys(seqCounts).forEach(function(seq,i){
             var avg = (intenSums[seq]/seqCounts[seq]);
-            evidenceData.push({id:i,sequence:seq,count:seqCounts[seq],totInten:intenSums[seq],avgInten:avg});
+            evidenceData.push({id:i,sequence:seq,modifications:mods[seq],count:seqCounts[seq],totInten:intenSums[seq],avgInten:avg});
           })
 
           updateTables();
