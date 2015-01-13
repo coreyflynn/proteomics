@@ -242,7 +242,8 @@ handleSearch = function handleSearch (e) {
               else
                 return memo + 0;
             }, 0);
-            mods[sequence] = _.union(intenSums[sequence].modifications, mods[sequence]);
+            alert(intenSums[sequence]);
+            //mods[sequence] = _.union(intenSums[sequence].modifications, mods[sequence]);
           })
 
           alert("Stage 2: " + JSON.stringify(mods));
