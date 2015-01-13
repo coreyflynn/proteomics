@@ -236,14 +236,14 @@ handleSearch = function handleSearch (e) {
           alert("Stage 1: " + JSON.stringify(intenSums));
 
           _.keys(intenSums).forEach(function(sequence){
+            mods[sequence] = _.union(intenSums[sequence].modifications, mods[sequence]);
             intenSums[sequence] = _.reduce(intenSums[sequence], function(memo, obj){
               if (obj.intensity)
                 return memo + obj.intensity;
               else
                 return memo + 0;
             }, 0);
-            alert(intenSums[sequence]);
-            //mods[sequence] = _.union(intenSums[sequence].modifications, mods[sequence]);
+            alert(JSON.stringify(mods));
           })
 
           alert("Stage 2: " + JSON.stringify(mods));
