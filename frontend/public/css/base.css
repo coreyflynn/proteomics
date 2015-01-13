@@ -4,7 +4,3 @@ body {
     font-weight: 400;
     line-height: 1.65;
 }
-#searchBox{
-	max-height: 200px;
-	overflow: scroll;
-}
