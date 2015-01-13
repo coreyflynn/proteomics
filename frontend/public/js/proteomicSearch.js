@@ -215,6 +215,7 @@ handleSearch = function handleSearch (e) {
           $('#apiError').animate({'opacity':0},600);
           var elements = [],
               seqCounts = [];
+          sequences     = [];
           intenSums     = [];
           mods          = [];
           evidenceData  = [];
@@ -230,13 +231,13 @@ handleSearch = function handleSearch (e) {
           });
 
           // Intensity sum array creation
-          intenSums = _.groupBy(elements, function (element) {
+          sequences = _.groupBy(elements, function (element) {
             return element.sequence;
           });
-          alert("Stage 1: " + JSON.stringify(intenSums));
+          alert("Stage 1: " + JSON.stringify(sequences));
 
-          _.keys(intenSums).forEach(function(sequence){
-            mods[sequence] = _.reduce(intenSums[sequence], function(memo, obj){
+          _.keys(sequences).forEach(function(sequence){
+            mods[sequence] = _.reduce(sequences[sequence], function(memo, obj){
               if (obj.modifications) {
                 alert("Pushing " + obj.modifications);
                 return memo.push(obj.modifications);
@@ -247,8 +248,8 @@ handleSearch = function handleSearch (e) {
             alert("mods["+sequence+"]  is set to " + mods[sequence]);
           })
 
-          _.keys(intenSums).forEach(function(sequence){
-            intenSums[sequence] = _.reduce(intenSums[sequence], function(memo, obj){
+          _.keys(sequences).forEach(function(sequence){
+            intenSums[sequence] = _.reduce(sequences[sequence], function(memo, obj){
               if (obj.intensity)
                 return memo + obj.intensity;
               else
