@@ -236,24 +236,26 @@ handleSearch = function handleSearch (e) {
           alert("Stage 1: " + JSON.stringify(intenSums));
 
           _.keys(intenSums).forEach(function(sequence){
-            //alert(JSON.stringify(intenSums[sequence]));
-            //mods[sequence] = _.union(intenSums[sequence].modifications, mods[sequence]);
             mods[sequence] = _.reduce(intenSums[sequence], function(memo, obj){
               if (obj.modifications)
                 return memo.push(obj.modifications);
               else
                 return memo;
-            }, 0);
+            }, []];
+          });
+
+          alert("Stage 2: " + JSON.stringify(mods));
+
+          _.keys(intenSums).forEach(function(sequence){
             intenSums[sequence] = _.reduce(intenSums[sequence], function(memo, obj){
               if (obj.intensity)
                 return memo + obj.intensity;
               else
                 return memo + 0;
             }, 0);
-            alert(JSON.stringify(mods));
-          })
+          });
 
-          alert("Stage 2: " + JSON.stringify(mods));
+          alert("Stage 3: " + JSON.stringify(intenSums));
 
           _.keys(seqCounts).forEach(function(seq,i){
             var avg = (intenSums[seq]/seqCounts[seq]);
