@@ -203,7 +203,7 @@ handleSearch = function handleSearch (e) {
 
       params = {
         q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join(''),
-        f: '{"sequence":1,"intensity":1,"modifications":1}',
+        f: '{"modified sequence":1,"intensity":1,"modifications":1}',
         col: '["evidence"]'
       }
 
@@ -227,7 +227,7 @@ handleSearch = function handleSearch (e) {
           })
 
           seqCounts = _.countBy(elements, function (element) {
-            return element.sequence;
+            return element['modified sequence'];
           });
 
           // Intensity sum array creation
