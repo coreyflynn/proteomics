@@ -235,6 +235,8 @@ handleSearch = function handleSearch (e) {
             return element['modified sequence'];
           });
 
+          alert(JSON.stringify(sequences));
+
           // Create modifications array
           _.keys(sequences).forEach(function(sequence){
             mods[sequence] = [];
