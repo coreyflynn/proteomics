@@ -213,12 +213,9 @@ handleSearch = function handleSearch (e) {
         data: params,
         success: function (res) {
           $('#apiError').animate({'opacity':0},600);
-          var elements  = [],
-              seqCounts = [];
-          sequences     = [];
-          intenSums     = [];
-          mods          = [];
-          evidenceData  = [];
+          
+          var elements  = [], seqCounts = [], mods = [];
+          sequences = []; intenSums = [];evidenceData = [];
 
           _.keys(res).forEach(function(key,i){
             res[key].forEach(function(element,j){
@@ -230,13 +227,17 @@ handleSearch = function handleSearch (e) {
             return element['modified sequence'];
           });
 
-          // Intensity sum array creation
+          // Populate array grouped on sequence
+          // "ABCDEFG":[{id:123, sequence:"ABCDEFG", intensity:456}
+          //            {id:234, sequence:"ABCDEFG", intensity:567}]
           sequences = _.groupBy(elements, function (element) {
             return element['modified sequence'];
           });
 
-          // Create modifications array
+          // Populate intensity sum and modification arrays
           _.keys(sequences).forEach(function(sequence){
+
+            // Modification
             mods[sequence] = [];
             for (obj in sequences[sequence]){
               if (sequences[sequence][obj].modifications){
@@ -244,16 +245,15 @@ handleSearch = function handleSearch (e) {
               }
             }
             mods[sequence] = _.uniq(mods[sequence]);
-          })
 
-          // Create intensity array
-          _.keys(sequences).forEach(function(sequence){
+            // Intensity
             intenSums[sequence] = _.reduce(sequences[sequence], function(memo, obj){
               if (obj.intensity)
                 return memo + obj.intensity;
               else
                 return memo + 0;
             }, 0);
+
           })
 
           _.keys(seqCounts).forEach(function(seq,i){
