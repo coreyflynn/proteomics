@@ -58,7 +58,7 @@ router.get('/', function(req, res) {
     else results = {};
 
     //- L - Limit to
-    if (req.query.l !- null) {
+    if (req.query.l != null) {
         try {lim = req.query.l;}
         catch (e) {res.json({error:"Problem parsing limit parameter", exception: e.toString()}); return;}
     }
