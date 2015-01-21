@@ -30,6 +30,7 @@ router.get('/', function(req, res) {
     var retCols   = {};
     var colsToAdd = [];
     var distinct  = req.query.d;
+    var lim       = 10;
 
     // PARAM SETUP
 
@@ -56,6 +57,12 @@ router.get('/', function(req, res) {
     }
     else results = {};
 
+    //- L - Limit to
+    if (req.query.l !- null) {
+        try {lim = req.query.l;}
+        catch (e) {res.json({error:"Problem parsing limit parameter", exception: e.toString()}); return;}
+    }
+
     /////////////////////////////////////////////////////
         /* Two steps to be run in series:
         *    1. Make the calls to the database (in parallel)
@@ -77,9 +84,9 @@ router.get('/', function(req, res) {
                     });
                 }
                 else {
-                    evidence.find(query, retCols, function (error, queryResults) {
+                    evidence.find(query, retCols).limit(lim).exec(function (error, queryResults) {
                         callback(error, {evidence: queryResults});
-                    }).limit(25);
+                    });
                 }
             }
             else {callback();}
@@ -94,9 +101,9 @@ router.get('/', function(req, res) {
                     });
                 }
                 else {
-                    modspecpeptides.find(query, retCols, function (error, queryResults) {
+                    modspecpeptides.find(query, retCols).limit(lim).exec(function (error, queryResults) {
                         callback(error, {modificationSpecificPeptides: queryResults});
-                    }).limit(25);
+                    });
                 }
             }
             else {callback();}
@@ -111,9 +118,9 @@ router.get('/', function(req, res) {
                     });
                 }
                 else {
-                    peptides.find(query, retCols, function (error, queryResults) {
+                    peptides.find(query, retCols).limit(lim).exec(function (error, queryResults) {
                         callback(error, {peptides: queryResults});
-                    }).limit(25);
+                    });
                 }
             }
             else {callback();}
@@ -128,9 +135,9 @@ router.get('/', function(req, res) {
                     });
                 }
                 else {
-                    proteingroups.find(query, retCols, function (error, queryResults) {
+                    proteingroups.find(query, retCols).limit(lim).exec(function (error, queryResults) {
                         callback(error, {proteinGroups: queryResults});
-                    }).limit(25);
+                    });
                 }
             }
             else {callback();}
