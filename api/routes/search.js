@@ -79,7 +79,7 @@ router.get('/', function(req, res) {
                 else {
                     evidence.find(query, retCols, function (error, queryResults) {
                         callback(error, {evidence: queryResults});
-                    });
+                    }).limit(25);
                 }
             }
             else {callback();}
@@ -96,7 +96,7 @@ router.get('/', function(req, res) {
                 else {
                     modspecpeptides.find(query, retCols, function (error, queryResults) {
                         callback(error, {modificationSpecificPeptides: queryResults});
-                    });
+                    }).limit(25);
                 }
             }
             else {callback();}
@@ -113,7 +113,7 @@ router.get('/', function(req, res) {
                 else {
                     peptides.find(query, retCols, function (error, queryResults) {
                         callback(error, {peptides: queryResults});
-                    });
+                    }).limit(25);
                 }
             }
             else {callback();}
@@ -130,7 +130,7 @@ router.get('/', function(req, res) {
                 else {
                     proteingroups.find(query, retCols, function (error, queryResults) {
                         callback(error, {proteinGroups: queryResults});
-                    });
+                    }).limit(25);
                 }
             }
             else {callback();}
