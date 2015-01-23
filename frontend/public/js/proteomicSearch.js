@@ -21,7 +21,8 @@ var evidenceData = [],
     pathDataView;
 
 // Set up the default entry point for API calls
-proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
+// proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
+proteomicsURL = 'http://localhost:3000/search?';
 
 
 /*************************
@@ -213,7 +214,7 @@ handleSearch = function handleSearch (e) {
         data: params,
         success: function (res) {
           $('#apiError').animate({'opacity':0},600);
-          
+
           var elements  = [], seqCounts = [], mods = [];
           sequences = []; intenSums = [];evidenceData = [];
 
@@ -355,6 +356,53 @@ handleSearchMock = function handleSearchMock (searchString) {
 function resizeTables() {
   var rows = (tables[level].getDataLength() > 19) ? 19 : tables[level].getDataLength() + 1;
   $('#' + level).css('height',rows*25 + 10);
+}
+
+/**
+ * Utility to export the content of a dataView to a tab separated value table
+ * @param {SlickGrid table} table the table to export
+ * @param {string} the method to export the table. Valid options are 'tsv' and 'csv'. Defaults to 'tsv'
+ */
+function exportTableAsTSV(table,method) {
+  var exportString,
+      blob,
+      timestamp,
+      joiner,
+      lines = [],
+      data = table.getData().getItems(),
+      headers = _.pluck(table.getColumns(),'field');
+
+  // make sure we have a method set up
+  method = (method === undefined) ? 'tsv' : method;
+  switch (method) {
+    case 'tsv':
+      joiner = '\t';
+      break;
+    case 'csv':
+      joiner = ',';
+      break;
+    default:
+      joiner = '\t';
+      break;
+  }
+
+  // build the first line from the headers of the table
+  lines.push(headers.join(joiner));
+
+  // continue building lines from each row in the table
+  data.forEach(function(datum) {
+    var cells = [];
+    headers.forEach(function(header) {
+      cells.push(datum[header]);
+    });
+    lines.push(cells.join(joiner));
+  });
+
+  // Build the full export string and save it as a blob
+  exportString = lines.join("\n");
+	blob = new Blob([exportString], {type: "text/plain;charset=utf-8"});
+	timestamp = new Date().getTime();
+	saveAs(blob, "ProteomicsCrawler" + timestamp + "." + method);
 }
 
 
