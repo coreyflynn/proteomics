@@ -374,35 +374,52 @@ function exportTableAsTSV(table,method) {
 
   // make sure we have a method set up
   method = (method === undefined) ? 'tsv' : method;
-  switch (method) {
-    case 'tsv':
-      joiner = '\t';
-      break;
-    case 'csv':
-      joiner = ',';
-      break;
-    default:
-      joiner = '\t';
-      break;
+
+  // if the method is png, download the table as a png image,
+  // otherwise download it as a text file
+  if (method === 'png') {
+    html2canvas(table.getContainerNode(), {
+      onrendered: function(canvas) {
+        var ctx = canvas.getContext("2d");
+        // ctx.scale(10,10);
+        canvas.toBlob(function(blob) {
+            saveAs(blob, "ProteomicsCrawler" + timestamp + ".png");
+        });
+      }
+    });
+
+  } else {
+    switch (method) {
+      case 'tsv':
+        joiner = '\t';
+        break;
+      case 'csv':
+        joiner = ',';
+        break;
+      default:
+        joiner = '\t';
+        break;
+    }
+
+    // build the first line from the headers of the table
+    lines.push(headers.join(joiner));
+
+    // continue building lines from each row in the table
+    data.forEach(function(datum) {
+      var cells = [];
+      headers.forEach(function(header) {
+        cells.push(datum[header]);
+      });
+      lines.push(cells.join(joiner));
+    });
+
+    // Build the full export string and save it as a blob
+    exportString = lines.join("\n");
+    blob = new Blob([exportString], {type: "text/plain;charset=utf-8"});
+    timestamp = new Date().getTime();
+    saveAs(blob, "ProteomicsCrawler" + timestamp + "." + method);
   }
 
-  // build the first line from the headers of the table
-  lines.push(headers.join(joiner));
-
-  // continue building lines from each row in the table
-  data.forEach(function(datum) {
-    var cells = [];
-    headers.forEach(function(header) {
-      cells.push(datum[header]);
-    });
-    lines.push(cells.join(joiner));
-  });
-
-  // Build the full export string and save it as a blob
-  exportString = lines.join("\n");
-	blob = new Blob([exportString], {type: "text/plain;charset=utf-8"});
-	timestamp = new Date().getTime();
-	saveAs(blob, "ProteomicsCrawler" + timestamp + "." + method);
 }
 
 
