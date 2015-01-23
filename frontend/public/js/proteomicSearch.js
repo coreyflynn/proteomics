@@ -212,7 +212,8 @@ handleSearch = function handleSearch (e) {
       params = {
         q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
         f: '{"modified sequence":1,"intensity":1,"modifications":1}',
-        col: '["evidence"]'
+        col: '["evidence"]',
+        l: 1000
       }
 
       $.ajax({
@@ -289,7 +290,8 @@ handleSearch = function handleSearch (e) {
 
 
     params = {
-      q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join('')
+      q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
+      l: 1000
     }
 
     $.ajax({
