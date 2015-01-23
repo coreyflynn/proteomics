@@ -210,7 +210,17 @@ module.exports = function(grunt) {
             'css/internal/barista.css': 'css/internal/barista.scss'
           }
         }
+      },
+
+    // configure system commands
+    shell: {
+      selenium:{
+        command: 'node_modules/selenium-standalone/bin/start-selenium'
+      },
+      intern:{
+        command: 'node_modules/intern/bin/intern-runner.js config=test/intern'
       }
+    }
   });
 
   // Load the plugin that provides the "concat" task.
@@ -240,6 +250,12 @@ module.exports = function(grunt) {
   //register a task to grab some git information that we will use later
   grunt.loadNpmTasks('grunt-gitinfo');
 
+  //register a task to run selenium
+  grunt.loadNpmTasks('grunt-selenium-webdriver');
+
+  // register a task to make system calls
+  grunt.loadNpmTasks('grunt-shell');
+
   // by default, do everything but doc and external dependency builds
   grunt.registerTask('default', ['gitinfo','handlebars','concat_internal','uglify:main','concat_main','sass','cssmin']);
 
@@ -260,7 +276,12 @@ module.exports = function(grunt) {
   // concat_main task (combines external and internal minimized code)
   grunt.registerTask('concat_main',['concat:js_barista_main_min']);
 
+  // test task
+  grunt.registerTask('test',['shell:selenium','shell:intern']);
+
   // Default task(s).
   grunt.registerTask('doc', ['handlebars','concat_internal','uglify:main','concat_main','sass','cssmin','groc']);
+
+
 
 };

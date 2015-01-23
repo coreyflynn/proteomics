@@ -11,10 +11,10 @@ Barista.Views.GridView = Backbone.View.extend({
 
 		// set up grid options
 		this.span_class = (this.options.span_class !== undefined) ? this.options.span_class : "col_lg_12";
-		this.legend = (this.options.legend !== undefined) ? this.options.legend : undefined;
-		this.no_download = (this.options.no_download !== undefined) ? this.options.no_download : undefined;
-		this.no_slice = (this.options.no_slice !== undefined) ? this.options.no_slice : undefined;
-		this.no_legend = (this.options.no_legend !== undefined) ? this.options.no_legend : undefined;
+		this.legend = (this.options.legend !== undefined) ? this.options.legend :null;
+		this.no_download = (this.options.no_download !== undefined) ? this.options.no_download :null;
+		this.no_slice = (this.options.no_slice !== undefined) ? this.options.no_slice :null;
+		this.no_legend = (this.options.no_legend !== undefined) ? this.options.no_legend :null;
 		this.edit = (this.options.edit !== undefined) ? this.options.edit : false;
 		this.limit = (this.options.limit !== undefined) ? this.options.limit : 30;
 

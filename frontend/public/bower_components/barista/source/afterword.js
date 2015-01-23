@@ -3,9 +3,9 @@
 (function (){
 
     //set the user_key from a local file called barista_config if it is present
-    //at either / or /public
-    if (!Barista.setUserKey('barista_config.json')){
-      Barista.setUserKey('/public/barista_config.json');
+    //at either /public or /
+    if (!Barista.setUserKey('/public/barista_config.json')){
+      Barista.setUserKey('/barista_config.json');
     };
 
     //find all of the barista_target div elements on the page

@@ -259,7 +259,7 @@ function program7(depth0,data) {
   if (stack1 = helpers.subtitle) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.subtitle; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "</p>\n		</div>\n	</div>\n\n	<!-- spacer -->\n	<div class=\"cmap-spacer-large\"></div>\n</div>\n";
+    + "</p>\n		</div>\n	</div>\n\n</div>\n";
   return buffer;
   });
 
@@ -1690,6 +1690,7 @@ Barista.setAPIURL = function(url) {
         url = '//' + url;
     }
     Barista.APIURL = url;
+    Barista.setAPIPrefilter(url);
 };
 
 // # **setUserKey**
@@ -2645,6 +2646,70 @@ Barista.Models.TickModel = Backbone.Model.extend({
 		data_object: {}
 	}
 });
+/**
+ * Model to represent a sequence and the modifications on that sequence
+ */
+Barista.Models.SequenceModel = Backbone.Model.extend({
+
+  /**
+   * the default options for the model
+   * @type {Object}
+   */
+  defaults: {
+    sequence: '',
+    displaySequence: '',
+    modifications: new Backbone.Collection()
+  },
+
+  /**
+   * initialize the model to listen to its own model changes
+   */
+  initialize: function() {
+    this.listenTo(this, 'change:sequence', this.parseSequence);
+  },
+
+  /**
+   * function to populate the derived model attributes of
+   * displaySequence and modifications
+   */
+  parseSequence: function() {
+    var sequence = this.get('sequence'),
+        modifications = this.get('modifications'),
+        indices = [],
+        numMods = 0;
+        modObjects = [];
+
+    // reset the modifications collection
+    modifications.reset();
+
+    // remove leading and trailing underscores
+    sequence = sequence.replace(/_/g,'');
+
+    // find all occurances of '(' in the sequence, these are the modifications
+    for(var i=0; i<sequence.length;i++) {
+      if (sequence[i] === '(') {
+        indices.push(i);
+      }
+    }
+
+    // for each modification, pop it out of the sequence string and add a new
+    // model to the modifications collection
+    indices.forEach(function(index) {
+      var mod;
+      index -= numMods * 4;
+      mod = sequence.slice(index + 1,index + 3);
+      sequence = [sequence.slice(0,index),sequence.slice(index + 4,sequence.length)].join('');
+      modObjects.push({index: index, modification: mod});
+      numMods += 1;
+    });
+
+    modifications.add(modObjects);
+
+    // set the derived attributes on the model
+    this.set({'modifications': modifications, 'displaySequence': sequence});
+  }
+});
+
 // # **AnalysisHistoryCollection**
 // A Backbone.Collection that represents a set of analysis history objects.  This collection is suitable for
 // internal use in GridView.
@@ -5749,10 +5814,10 @@ Barista.Views.GridView = Backbone.View.extend({
 
 		// set up grid options
 		this.span_class = (this.options.span_class !== undefined) ? this.options.span_class : "col_lg_12";
-		this.legend = (this.options.legend !== undefined) ? this.options.legend : undefined;
-		this.no_download = (this.options.no_download !== undefined) ? this.options.no_download : undefined;
-		this.no_slice = (this.options.no_slice !== undefined) ? this.options.no_slice : undefined;
-		this.no_legend = (this.options.no_legend !== undefined) ? this.options.no_legend : undefined;
+		this.legend = (this.options.legend !== undefined) ? this.options.legend :null;
+		this.no_download = (this.options.no_download !== undefined) ? this.options.no_download :null;
+		this.no_slice = (this.options.no_slice !== undefined) ? this.options.no_slice :null;
+		this.no_legend = (this.options.no_legend !== undefined) ? this.options.no_legend :null;
 		this.edit = (this.options.edit !== undefined) ? this.options.edit : false;
 		this.limit = (this.options.limit !== undefined) ? this.options.limit : 30;
 
@@ -9928,6 +9993,99 @@ Barista.Views.ViolinPlotView = Barista.Views.BaristaBaseView.extend({
 });
 
 /**
+ * A view the displays both sequence structure and modifications
+ */
+
+Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
+  /**
+   * give the view a name to be used throughout the View's functions when it needs to know what its class name is
+   * @type {String}
+   */
+  name: "SequenceView",
+
+  /**
+   * the default model for the view
+   * @type {backbone.Model}
+   */
+  model: new Barista.Models.SequenceModel(),
+
+  /**
+   * Overide the default Backbone.View initialize method to handle optional arguments, compile the view
+   * template, bind model changes to view updates, and render the view
+   */
+  initialize: function(){
+    // initialize the base view
+    this.base_initialize();
+  },
+
+  /**
+   * completely render the view. Updates both static and dynamic content in the view.
+   * @return {SequenceView} A reference to this to support chaining
+   */
+  render: function(){
+    var self = this;
+    // call BaristaBaseView's render function first so we can layer on top of it
+    this.base_render();
+
+    // render a sequence line
+    this.renderSequenceLine();
+
+    // render modifications
+    this.renderModifications();
+
+    return this;
+  },
+
+  /**
+   * update the dynamic potions of the view
+   * @return {SequenceView} A reference to this to support chaining
+   */
+  update: function(){
+    this.render();
+
+    return this;
+  },
+
+  /**
+   * render the line depicting the base sequence
+   * @return {SequenceView} A reference to this to support chaining
+   */
+  renderSequenceLine: function() {
+    this.fg_layer.selectAll('.sequenceLine').data([]).exit().remove();
+    this.fg_layer.selectAll('.sequenceLine').data([1]).enter()
+      .append('rect')
+      .attr("class","sequenceLine")
+      .attr("height", 2)
+      .attr("width",this.width - 10)
+      .attr("x",5)
+      .attr("y",this.height / 2 - 2)
+      .attr("fill","#BFBFBF");
+
+    return this;
+  },
+
+  /**
+   * render the modifications on the sequence
+   */
+  renderModifications: function() {
+    var self = this;
+    this.fg_layer.selectAll('.sequenceModification').data([]).exit().remove();
+    this.fg_layer.selectAll('.sequenceModification')
+      .data(this.model.get('modifications').models).enter()
+      .append('circle')
+      .attr('r', 10)
+      .attr('fill', '#F89838')
+      .attr('cx', function(d) {
+        var totalLength = self.model.get('displaySequence').length,
+            positionPct = d.get('index') / totalLength;
+        return positionPct * (self.width - 10) + 10;
+      })
+      .attr("cy",this.height / 2);
+  }
+
+});
+
+/**
 Tile constructor
 @param {object} [options={}] options object to set properties
 @classdesc A Tile that displays simple information and serves as a front door to the an underlying app.  The 
@@ -10565,9 +10723,9 @@ FullAnimatedImageTextTile.prototype.draw_text = function() {
 (function (){
 
     //set the user_key from a local file called barista_config if it is present
-    //at either / or /public
-    if (!Barista.setUserKey('barista_config.json')){
-      Barista.setUserKey('/public/barista_config.json');
+    //at either /public or /
+    if (!Barista.setUserKey('/public/barista_config.json')){
+      Barista.setUserKey('/barista_config.json');
     };
 
     //find all of the barista_target div elements on the page

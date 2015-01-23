@@ -186,6 +186,9 @@ updateTables = function updateTables () {
   pathDataView.endUpdate();
   pathTable.invalidate();
   pathTable.render();
+
+  resizeTables();
+  drawSequences();
 }
 
 /**
@@ -358,8 +361,47 @@ handleSearchMock = function handleSearchMock (searchString) {
  * data is in them
  */
 function resizeTables() {
-  var rows = (tables[level].getDataLength() > 19) ? 19 : tables[level].getDataLength() + 1;
-  $('#' + level).css('height',rows*25 + 10);
+
+  var rows = (evidenceTable.getDataLength() > 19) ? 19 : evidenceTable.getDataLength() + 1;
+  $(evidenceTable.getContainerNode()).css('height',rows*25 + 10);
+
+  rows = (pathTable.getDataLength() > 19) ? 19 : pathTable.getDataLength() + 1;
+  $(pathTable.getContainerNode()).animate({'height':rows*25 + 10}, 600);
+}
+
+/**
+ * Utility to draw sequence diagrams based on the sequences observed
+ */
+function drawSequences() {
+  var $container = $('#sequenceViews'),
+      $sequenceViews = $container.children();
+      sequences = _.pluck(evidenceTable.getData().getItems(),'sequence');
+
+  $sequenceViews.each(function() {
+    $(this).stop();
+    $(this).animate({'opacity':0}, 600);
+    setTimeout(function(){
+      $container.empty();
+    },600);
+  });
+
+  setTimeout(function(){
+    sequenceViews = [];
+    sequenceModels = [];
+    $container.stop();
+    $container.css('opacity',0);
+
+    sequences.forEach(function(sequence,i) {
+      console.log(sequence,i)
+      var id = 'sequence' + i;
+      $container.append('<div id="' + id + '" class="col-xs-4"></div>');
+      sequenceModels.push(new Barista.Models.SequenceModel());
+      sequenceViews.push(new Barista.Views.SequenceView({el:$('#' + id), model: sequenceModels[i]}));
+      sequenceViews[i].model.set({sequence:sequence});
+    });
+    $container.animate({'opacity':1},600);
+  }, 600);
+
 }
 
 /**
