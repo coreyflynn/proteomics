@@ -193,6 +193,10 @@ updateTables = function updateTables () {
  * @param {string} e the string that should be searched
  */
 handleSearch = function handleSearch (e) {
+  var parenChars = ['(',')'];
+  parenChars.forEach(function(char) {
+    e.val = e.val.split(char).join('\\\\' + char);
+  });
 
   if (e.val.length){
     var fieldMap = {
@@ -203,7 +207,7 @@ handleSearch = function handleSearch (e) {
     }
 
       params = {
-        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join(''),
+        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
         f: '{"modified sequence":1,"intensity":1,"modifications":1}',
         col: '["evidence"]'
       }
@@ -282,7 +286,7 @@ handleSearch = function handleSearch (e) {
 
 
     params = {
-      q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join('')
+      q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join('')
     }
 
     $.ajax({
@@ -363,7 +367,7 @@ function resizeTables() {
  * @param {SlickGrid table} table the table to export
  * @param {string} the method to export the table. Valid options are 'tsv' and 'csv'. Defaults to 'tsv'
  */
-function exportTableAsTSV(table,method) {
+function exportTable(table,method) {
   var exportString,
       blob,
       timestamp,

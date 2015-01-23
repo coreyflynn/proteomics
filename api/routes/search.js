@@ -146,7 +146,7 @@ router.get('/', function(req, res) {
 
     // Step 2 - Unique array and print results
     //////////////////////////////////////////
-    
+
     function (error, asyncResults) {
 
         if(error)
