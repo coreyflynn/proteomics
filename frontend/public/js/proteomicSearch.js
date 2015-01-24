@@ -394,11 +394,10 @@ function drawSequences() {
     $container.css('opacity',0);
 
     sequences.forEach(function(sequence,i) {
-      console.log(sequence,i)
       var id = 'sequence' + i;
       $container.append('<div id="' + id + '" class="col-xs-4"></div>');
       sequenceModels.push(new Barista.Models.SequenceModel());
-      sequenceViews.push(new Barista.Views.SequenceView({el:$('#' + id), model: sequenceModels[i]}));
+      sequenceViews.push(new Barista.Views.SequenceView({el:$('#' + id), model: sequenceModels[i], png: false}));
       sequenceViews[i].model.set({sequence:sequence});
     });
     $container.animate({'opacity':1},600);
@@ -541,7 +540,6 @@ function addDataset(name, field, type, color){
       filter: filterFunction
     }
   }
-  console.log(baseObject)
   Barista.Datasets = _.extend(Barista.Datasets,baseObject);
 }
 

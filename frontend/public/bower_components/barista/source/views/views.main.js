@@ -14,6 +14,7 @@
 // 2.  {string}  **fg\_color**  the hex color code to use as the foreground color of the view, defaults to *#1b9e77*
 // 3.  {string}  **span\_class**  a bootstrap span class to size the width of the view, defaults to *"col-lg-12"*
 // 4.  {Number}  **plot_height**  the height of the plot in pixels, defaults to *120*
+// 5.  {Boolean} **png**  show the png export button. defaults to *true*
 
 //		base_view = new BaristaBaseView({el: $("target_selector",
 //									bg_color:"#ffffff",
@@ -66,6 +67,9 @@ Barista.Views.BaristaBaseView = Backbone.View.extend({
 
 		// set up the span size
 		this.span_class = (this.options.span_class !== undefined) ? this.options.span_class : "col-lg-12";
+
+		// set up the png option
+		this.png = (this.options.png !== undefined) ? this.options.png : true;
 
 		// bind render to model changes
 		this.listenTo(this.model,'change', this.update);
@@ -162,8 +166,9 @@ Barista.Views.BaristaBaseView = Backbone.View.extend({
 			.attr("fill",this.bg_color);
 
 		// add a png export overlay
-		this.controls_layer.selectAll("." + this.div_string + "png_export").data([]).exit().remove();
-		this.controls_layer.selectAll("." + this.div_string + "png_export").data([1]).enter().append("text")
+		if (this.png) {
+			this.controls_layer.selectAll("." + this.div_string + "png_export").data([]).exit().remove();
+			this.controls_layer.selectAll("." + this.div_string + "png_export").data([1]).enter().append("text")
 			.attr("class", this.div_string + "png_export no_png_export")
 			.attr("x",10)
 			.attr("y",this.height - 10)
@@ -172,7 +177,9 @@ Barista.Views.BaristaBaseView = Backbone.View.extend({
 			.text("png")
 			.on("mouseover",function(){d3.select(this).transition().duration(500).attr("opacity",1).attr("fill","#56B4E9");})
 			.on("mouseout",function(){d3.select(this).transition().duration(500).attr("opacity",0.25).attr("fill","#000000");})
-			.on("click",function(){self.save_png();});
+			.on("click",function(){self.save_png();});	
+		}
+
 
 		return this;
 	},
@@ -6676,6 +6683,19 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
    * template, bind model changes to view updates, and render the view
    */
   initialize: function(){
+    // set up modification colors
+    this.modificationColors = (this.options.modificationColors !== undefined) ? this.options.modificationColors : undefined;
+    if (this.modificationColors === undefined) {
+      this.modificationColors = {
+        'ac': '#ff9933',
+        'ox': '#00ccff'
+      }
+    }
+
+    //set up default sequenceUnitSize
+    this.sequenceUnitSize = (this.options.sequenceUnitSize !== undefined) ? this.options.sequenceUnitSize : 5;
+
+
     // initialize the base view
     this.base_initialize();
   },
@@ -6709,16 +6729,29 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
   },
 
   /**
+   * calculate the length of the sequence in pixels
+   * @return {float} the length in pixels of the sequence to render
+   */
+  getRenderLength: function() {
+    if (this.sequenceUnitSize * this.model.get('displaySequence').length > this.width - 20) {
+      return this.width -20;
+    }
+    return this.sequenceUnitSize * this.model.get('displaySequence').length;
+
+  },
+
+  /**
    * render the line depicting the base sequence
    * @return {SequenceView} A reference to this to support chaining
    */
   renderSequenceLine: function() {
+    var renderLength = this.getRenderLength();
     this.fg_layer.selectAll('.sequenceLine').data([]).exit().remove();
     this.fg_layer.selectAll('.sequenceLine').data([1]).enter()
       .append('rect')
       .attr("class","sequenceLine")
       .attr("height", 2)
-      .attr("width",this.width - 10)
+      .attr("width",renderLength)
       .attr("x",5)
       .attr("y",this.height / 2 - 2)
       .attr("fill","#BFBFBF");
@@ -6730,17 +6763,26 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
    * render the modifications on the sequence
    */
   renderModifications: function() {
-    var self = this;
+    var self = this,
+        renderLength = this.getRenderLength();
+
     this.fg_layer.selectAll('.sequenceModification').data([]).exit().remove();
     this.fg_layer.selectAll('.sequenceModification')
       .data(this.model.get('modifications').models).enter()
       .append('circle')
       .attr('r', 10)
-      .attr('fill', '#F89838')
+      .attr('fill', function(d) {
+        var color = self.modificationColors[d.get('modification')];
+        if (color === undefined) {
+          return '#BDBDBD';
+        } else {
+          return color;
+        }
+      })
       .attr('cx', function(d) {
         var totalLength = self.model.get('displaySequence').length,
             positionPct = d.get('index') / totalLength;
-        return positionPct * (self.width - 10) + 10;
+        return positionPct * (renderLength) + 10;
       })
       .attr("cy",this.height / 2);
   }
