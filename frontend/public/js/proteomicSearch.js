@@ -104,8 +104,11 @@ pathTable.onSort.subscribe(function (e, args) {
  * App setup *
  *************/
 $('#apiError').css('opacity',0);
-$('#evidenceTable').css('opacity',0);
+$('#evidenceContainer').css('opacity',0);
 $('#pathTable').css('opacity',0);
+$('#evidenceTableTSV').click(function(){exportTable(evidenceTable);});
+$('#evidenceTableCSV').click(function(){exportTable(evidenceTable, 'csv');});
+$('#evidenceTablePNG').click(function(){exportTable(evidenceTable, 'png');});
 
 // try to make a call to the proteomics API and let the user know if it fails
 (function(){$.ajax({
@@ -120,6 +123,8 @@ $('#pathTable').css('opacity',0);
     }
   }
 });})();
+
+
 
 /*********************
  * Utility Functions *
@@ -273,15 +278,15 @@ handleSearch = function handleSearch (e) {
           updateTables();
 
           if (evidenceData.length){
-            $('#evidenceTable').animate({opacity:1},600);
+            $('#evidenceContainer').animate({opacity:1},600);
           }else{
-            $('#evidenceTable').animate({opacity:0},600);
+            $('#evidenceContainer').animate({opacity:0},600);
           }
           },
         error: function (jqXHR, textStatus) {
           if (textStatus === 'error'){
             $('#apiError').animate({'opacity':1},600);
-            $('#evidenceTable').animate({opacity:0},600);
+            $('#evidenceContainer').animate({opacity:0},600);
           }else{
             console.log(jqXHR);
           }
@@ -325,7 +330,7 @@ handleSearch = function handleSearch (e) {
     evidenceData = [];
     pathData = [];
     updateTables();
-    $('#evidenceTable').animate({opacity:0},600);
+    $('#evidenceContainer').animate({opacity:0},600);
     $('#pathTable').animate({opacity:0},600);
   }
 }
@@ -345,11 +350,11 @@ handleSearchMock = function handleSearchMock (searchString) {
     for (_i = 0; _i < 1000; _i++){
       results.push({id: 'MockData' + Math.round(Math.random() * 1000000000), value: Math.random()});
     }
-    $('#evidenceTable').animate({opacity:1},600);
+    $('#evidenceContainer').animate({opacity:1},600);
     data = results;
     updateTables();
   }else{
-    $('#evidenceTable').animate({opacity:0},600);
+    $('#evidenceContainer').animate({opacity:0},600);
     setTimeout( function () {
       data = results;
       updateTables();
@@ -380,7 +385,7 @@ function drawSequences() {
       sequences = _.pluck(evidenceTable.getData().getItems(),'sequence');
 
   $sequenceViews.each(function() {
-    $(this).stop();
+    $(this).finish();
     $(this).animate({'opacity':0}, 600);
     setTimeout(function(){
       $container.empty();
@@ -390,7 +395,7 @@ function drawSequences() {
   setTimeout(function(){
     sequenceViews = [];
     sequenceModels = [];
-    $container.stop();
+    $container.finish();
     $container.css('opacity',0);
 
     sequences.forEach(function(sequence,i) {
@@ -416,7 +421,9 @@ function exportTable(table,method) {
       timestamp,
       joiner,
       lines = [],
+      timestamp = new Date().getTime(),
       data = table.getData().getItems(),
+      dataLength = data.length,
       headers = _.pluck(table.getColumns(),'field');
 
   // make sure we have a method set up
@@ -439,6 +446,7 @@ function exportTable(table,method) {
     switch (method) {
       case 'tsv':
         joiner = '\t';
+        loaderID = '#evidenceTSVLoader';
         break;
       case 'csv':
         joiner = ',';
@@ -452,7 +460,7 @@ function exportTable(table,method) {
     lines.push(headers.join(joiner));
 
     // continue building lines from each row in the table
-    data.forEach(function(datum) {
+    data.forEach(function(datum,i) {
       var cells = [];
       headers.forEach(function(header) {
         cells.push(datum[header]);
@@ -463,7 +471,6 @@ function exportTable(table,method) {
     // Build the full export string and save it as a blob
     exportString = lines.join("\n");
     blob = new Blob([exportString], {type: "text/plain;charset=utf-8"});
-    timestamp = new Date().getTime();
     saveAs(blob, "ProteomicsCrawler" + timestamp + "." + method);
   }
 

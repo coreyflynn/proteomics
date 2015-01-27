@@ -19,9 +19,12 @@ html(lang="en")
             p#apiError.text-center.text-danger <b>Oops, looks like the proteomics API is down</b>
           .col-xs-offset-1.col-xs-10
             #pathTable(style='height:100px;')
-          .col-xs-offset-1.col-xs-10
+          #evidenceContainer.col-xs-offset-1.col-xs-10
             .cmap-spacer-small
             #evidenceTable(style='height:500px;')
+            p#evidenceTableTSV.pull-left.table-export-text tsv
+            p#evidenceTableCSV.pull-left.table-export-text csv
+            p#evidenceTablePNG.pull-left.table-export-text png
           .col-xs-offset-1.col-xs-10
             .cmap-spacer-small
             #sequenceViews
