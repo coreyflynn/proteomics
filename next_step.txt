@@ -1,0 +1,12 @@
+[
+{
+	"gene name": "Example1",
+	"experiments": ["1","2","3"],
+	"modifications": ["mod1","mod2","mod3"]
+}
+{
+	"gene name": "Example2",
+	"experiments": ["3","4","5"],
+	"modifications": ["mod3","mod4","mod5"]
+}
+]
