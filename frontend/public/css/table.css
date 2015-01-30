@@ -1,0 +1,32 @@
+[class^="slickgrid_"],
+[class^="slickgrid_"] div {
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+}
+
+.slick-header-column.ui-state-default {
+    background:none ;
+    background-color: #f9f9f9 ;
+    color: #2DB0DA;
+    border: 1px solid #DDD;
+    padding: 0;
+    text-shadow: none;
+    font-family: 'Open Sans','Helvetica Neue', Helvetica, Verdana sans-serif;
+    font-wieght: 300;
+    font-size: 2.0225rem;
+    height: 3.272405rem;
+    line-height: 3.272405rem;
+}
+
+.slick-row.ui-widget-content, .slick-cell {
+    background: none;
+    background-color: #eeeeee;
+    color: #444444;
+    /*border: none;*/
+    border-bottom: solid 1px #ffffff;
+    font-family: 'Roboto Slab','Helvetica Neue', Helvetica, Verdana sans-serif;
+    font-wieght: 400;
+    font-size: 1.25rem;
+    height: 2.0225rem;
+}
