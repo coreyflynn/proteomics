@@ -21,6 +21,7 @@ var evidenceData = [],
     pathDataView;
 
 // Set up the default entry point for API calls
+// proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
 proteomicsURL = 'http://localhost:3000/search?';
 
 
@@ -62,6 +63,10 @@ pathDataView = new Slick.Data.DataView({ inlineFilters: true });
 
 evidenceTableColumns = [
   { id: "sequence", name: "Sequence", field:"sequence",sortable: true},
+  { id: "modifications", name: "Modifications", field:"modifications",sortable: true},
+  { id: "count", name: "Count", field:"count",sortable: true},
+  { id: "totInten", name: "Total Intensity", field:"totInten",sortable: true},
+  { id: "avgInten", name: "Average Intensity", field:"avgInten",sortable: true},
 ];
 pathTableColumns = [
   { id: "path", name: "File Path", field:"path",sortable: true},
@@ -99,8 +104,11 @@ pathTable.onSort.subscribe(function (e, args) {
  * App setup *
  *************/
 $('#apiError').css('opacity',0);
-$('#evidenceTable').css('opacity',0);
+$('#evidenceContainer').css('opacity',0);
 $('#pathTable').css('opacity',0);
+$('#evidenceTableTSV').click(function(){exportTable(evidenceTable);});
+$('#evidenceTableCSV').click(function(){exportTable(evidenceTable, 'csv');});
+$('#evidenceTablePNG').click(function(){exportTable(evidenceTable, 'png');});
 
 // try to make a call to the proteomics API and let the user know if it fails
 (function(){$.ajax({
@@ -115,6 +123,8 @@ $('#pathTable').css('opacity',0);
     }
   }
 });})();
+
+
 
 /*********************
  * Utility Functions *
@@ -169,6 +179,7 @@ pathTableSorter = function pathTableSorter (e, args){
  */
 updateTables = function updateTables () {
 
+
   evidenceDataView.beginUpdate();
   evidenceDataView.setItems(evidenceData);
   evidenceDataView.endUpdate();
@@ -180,6 +191,9 @@ updateTables = function updateTables () {
   pathDataView.endUpdate();
   pathTable.invalidate();
   pathTable.render();
+
+  resizeTables();
+  drawSequences();
 }
 
 /**
@@ -187,6 +201,10 @@ updateTables = function updateTables () {
  * @param {string} e the string that should be searched
  */
 handleSearch = function handleSearch (e) {
+  var parenChars = ['(',')'];
+  parenChars.forEach(function(char) {
+    e.val = e.val.split(char).join('\\\\' + char);
+  });
 
   if (e.val.length){
     var fieldMap = {
@@ -197,9 +215,10 @@ handleSearch = function handleSearch (e) {
     }
 
       params = {
-        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join(''),
-        f: '{"sequence":1}',
-        col: '["evidence"]'
+        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
+        f: '{"modified sequence":1,"intensity":1,"modifications":1}',
+        col: '["evidence"]',
+        l: 1000
       }
 
       $.ajax({
@@ -208,27 +227,66 @@ handleSearch = function handleSearch (e) {
         data: params,
         success: function (res) {
           $('#apiError').animate({'opacity':0},600);
-          var sequences = [];
-          evidenceData = [];
+
+          var elements  = [], seqCounts = [], mods = [];
+          sequences = []; intenSums = [];evidenceData = [];
+
           _.keys(res).forEach(function(key,i){
             res[key].forEach(function(element,j){
-              sequences.push(element.sequence);
+              elements.push(element);
             });
           })
-          _.unique(sequences).forEach(function(seq,i){
-            evidenceData.push({id:i,sequence:seq});
+
+          seqCounts = _.countBy(elements, function (element) {
+            return element['modified sequence'];
+          });
+
+          // Populate array grouped on sequence
+          // "ABCDEFG":[{id:123, sequence:"ABCDEFG", intensity:456}
+          //            {id:234, sequence:"ABCDEFG", intensity:567}]
+          sequences = _.groupBy(elements, function (element) {
+            return element['modified sequence'];
+          });
+
+          // Populate intensity sum and modification arrays
+          _.keys(sequences).forEach(function(sequence){
+
+            // Modification
+            mods[sequence] = [];
+            for (obj in sequences[sequence]){
+              if (sequences[sequence][obj].modifications){
+                mods[sequence].push(sequences[sequence][obj].modifications);
+              }
+            }
+            mods[sequence] = _.uniq(mods[sequence]);
+
+            // Intensity
+            intenSums[sequence] = _.reduce(sequences[sequence], function(memo, obj){
+              if (obj.intensity)
+                return memo + obj.intensity;
+              else
+                return memo + 0;
+            }, 0);
+
           })
+
+          _.keys(seqCounts).forEach(function(seq,i){
+            var avg = (intenSums[seq]/seqCounts[seq]);
+            evidenceData.push({id:i,sequence:seq,modifications:mods[seq],count:seqCounts[seq],totInten:intenSums[seq],avgInten:avg});
+          })
+
           updateTables();
+
           if (evidenceData.length){
-            $('#evidenceTable').animate({opacity:1},600);
+            $('#evidenceContainer').animate({opacity:1},600);
           }else{
-            $('#evidenceTable').animate({opacity:0},600);
+            $('#evidenceContainer').animate({opacity:0},600);
           }
           },
         error: function (jqXHR, textStatus) {
           if (textStatus === 'error'){
             $('#apiError').animate({'opacity':1},600);
-            $('#evidenceTable').animate({opacity:0},600);
+            $('#evidenceContainer').animate({opacity:0},600);
           }else{
             console.log(jqXHR);
           }
@@ -237,7 +295,8 @@ handleSearch = function handleSearch (e) {
 
 
     params = {
-      q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join('')
+      q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
+      l: 1000
     }
 
     $.ajax({
@@ -271,7 +330,7 @@ handleSearch = function handleSearch (e) {
     evidenceData = [];
     pathData = [];
     updateTables();
-    $('#evidenceTable').animate({opacity:0},600);
+    $('#evidenceContainer').animate({opacity:0},600);
     $('#pathTable').animate({opacity:0},600);
   }
 }
@@ -291,11 +350,11 @@ handleSearchMock = function handleSearchMock (searchString) {
     for (_i = 0; _i < 1000; _i++){
       results.push({id: 'MockData' + Math.round(Math.random() * 1000000000), value: Math.random()});
     }
-    $('#evidenceTable').animate({opacity:1},600);
+    $('#evidenceContainer').animate({opacity:1},600);
     data = results;
     updateTables();
   }else{
-    $('#evidenceTable').animate({opacity:0},600);
+    $('#evidenceContainer').animate({opacity:0},600);
     setTimeout( function () {
       data = results;
       updateTables();
@@ -309,8 +368,112 @@ handleSearchMock = function handleSearchMock (searchString) {
  * data is in them
  */
 function resizeTables() {
-  var rows = (tables[level].getDataLength() > 19) ? 19 : tables[level].getDataLength() + 1;
-  $('#' + level).css('height',rows*25 + 10);
+
+  var rows = (evidenceTable.getDataLength() > 19) ? 19 : evidenceTable.getDataLength() + 1;
+  $(evidenceTable.getContainerNode()).css('height',rows*25 + 10);
+
+  rows = (pathTable.getDataLength() > 19) ? 19 : pathTable.getDataLength() + 1;
+  $(pathTable.getContainerNode()).animate({'height':rows*25 + 10}, 600);
+}
+
+/**
+ * Utility to draw sequence diagrams based on the sequences observed
+ */
+function drawSequences() {
+  var $container = $('#sequenceViews'),
+      $sequenceViews = $container.children();
+      sequences = _.pluck(evidenceTable.getData().getItems(),'sequence');
+
+  $sequenceViews.each(function() {
+    $(this).finish();
+    $(this).animate({'opacity':0}, 600);
+    setTimeout(function(){
+      $container.empty();
+    },600);
+  });
+
+  setTimeout(function(){
+    sequenceViews = [];
+    sequenceModels = [];
+    $container.finish();
+    $container.css('opacity',0);
+
+    sequences.forEach(function(sequence,i) {
+      var id = 'sequence' + i;
+      $container.append('<div id="' + id + '" class="col-xs-4"></div>');
+      sequenceModels.push(new Barista.Models.SequenceModel());
+      sequenceViews.push(new Barista.Views.SequenceView({el:$('#' + id), model: sequenceModels[i], png: false}));
+      sequenceViews[i].model.set({sequence:sequence});
+    });
+    $container.animate({'opacity':1},600);
+  }, 600);
+
+}
+
+/**
+ * Utility to export the content of a dataView to a tab separated value table
+ * @param {SlickGrid table} table the table to export
+ * @param {string} the method to export the table. Valid options are 'tsv' and 'csv'. Defaults to 'tsv'
+ */
+function exportTable(table,method) {
+  var exportString,
+      blob,
+      timestamp,
+      joiner,
+      lines = [],
+      timestamp = new Date().getTime(),
+      data = table.getData().getItems(),
+      dataLength = data.length,
+      headers = _.pluck(table.getColumns(),'field');
+
+  // make sure we have a method set up
+  method = (method === undefined) ? 'tsv' : method;
+
+  // if the method is png, download the table as a png image,
+  // otherwise download it as a text file
+  if (method === 'png') {
+    html2canvas(table.getContainerNode(), {
+      onrendered: function(canvas) {
+        var ctx = canvas.getContext("2d");
+        // ctx.scale(10,10);
+        canvas.toBlob(function(blob) {
+            saveAs(blob, "ProteomicsCrawler" + timestamp + ".png");
+        });
+      }
+    });
+
+  } else {
+    switch (method) {
+      case 'tsv':
+        joiner = '\t';
+        loaderID = '#evidenceTSVLoader';
+        break;
+      case 'csv':
+        joiner = ',';
+        break;
+      default:
+        joiner = '\t';
+        break;
+    }
+
+    // build the first line from the headers of the table
+    lines.push(headers.join(joiner));
+
+    // continue building lines from each row in the table
+    data.forEach(function(datum,i) {
+      var cells = [];
+      headers.forEach(function(header) {
+        cells.push(datum[header]);
+      });
+      lines.push(cells.join(joiner));
+    });
+
+    // Build the full export string and save it as a blob
+    exportString = lines.join("\n");
+    blob = new Blob([exportString], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, "ProteomicsCrawler" + timestamp + "." + method);
+  }
+
 }
 
 
@@ -358,7 +521,7 @@ function addDataset(name, field, type, color){
   baseObject = {}
   baseObject[name] = {
     // only return 4 items at a time in the autocomplete dropdown
-    limit: 2,
+    limit: 10,
 
     // provide a name for the default typeahead data source
     name: name,
@@ -384,153 +547,12 @@ function addDataset(name, field, type, color){
       filter: filterFunction
     }
   }
-  console.log(baseObject)
   Barista.Datasets = _.extend(Barista.Datasets,baseObject);
 }
 
 function configureDatasets() {
   addDataset('ProteomicsGeneNames','gene names','Gene','#00ccff');
-  addDataset('ProteomicsProteinNames','proteins','Protein','#ff66cc');
+  addDataset('ProteomicsProteinNames','protein names','Protein','#ff66cc');
   addDataset('ProteomicsModificationNames','modifications','Modification','#996600');
 
-  //   var geneNameFilter = function(response){
-  //     var datum_list = [];
-  //     var auto_data = [];
-  //     var object_map = {};
-  //
-  //     // for each item, pull out its cell_id and use that for the
-  //     // autocomplete value. Build a datum of other relevant data
-  //     // for use in suggestion displays
-  //     response.forEach(function(element){
-  //       auto_data.push(element);
-  //       object_map[element] = element;
-  //     });
-  //
-  //     // make sure we only show unique items
-  //     auto_data = _.uniq(auto_data);
-  //
-  //
-  //     // build a list of datum objects
-  //     auto_data.forEach(function(item){
-  //       var datum = {
-  //         value: item,
-  //         tokens: [item],
-  //         data: object_map[item]
-  //       }
-  //       _.extend(datum,{
-  //         type: 'Gene',
-  //         search_column: 'gene names',
-  //         color: '#00ccff',
-  //       });
-  //       datum_list.push(datum);
-  //     });
-  //
-  //     // return the processed list of datums for the autocomplete
-  //     return datum_list;
-  //   }
-  //
-  //
-  //   Barista.Datasets = _.extend(Barista.Datasets,
-  //   {ProteomicsGeneNames:
-  //     {
-  //   		// only return 4 items at a time in the autocomplete dropdown
-  //   		limit: 4,
-  //
-  //   		// provide a name for the default typeahead data source
-  //   		name: 'ProteomicsGeneNames',
-  //
-  //   		// the template to render for all results
-  //   		template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
-  //
-  //   		// use twitter's hogan.js to compile the template for the typeahead results
-  //   		engine: Hogan,
-  //
-  //   		remote: {
-  //   			url: '',
-  //
-  //   			replace: function(url, query){
-  //   				query = (query[0] === "*") ? query.replace("*",".*") : query;
-  //   				return [proteomicsURL,
-  //   					'q={"','gene names','":{"$regex":"^',query,'", "$options":"i"}}',
-  //   					'&d=','gene names'].join('')
-  //   			} ,
-  //
-  //   			dataType: 'jsonp',
-  //
-  //
-  //
-  //   			filter: geneNameFilter
-  //   		}
-  //   	}
-  //   }
-  // );
-
-  // Barista.Datasets = _.extend(Barista.Datasets,
-  //   {ProteomicsProteinNames:
-  //     {
-  //       // only return 4 items at a time in the autocomplete dropdown
-  //       limit: 4,
-  //
-  //       // provide a name for the default typeahead data source
-  //       name: 'ProteomicsProteinNames',
-  //
-  //       // the template to render for all results
-  //       template: '<span class="label" style="background-color: {{ color }}">{{ type }}</span> {{ value }}',
-  //
-  //       // use twitter's hogan.js to compile the template for the typeahead results
-  //       engine: Hogan,
-  //
-  //       remote: {
-  //         url: '',
-  //
-  //         replace: function(url, query){
-  //           query = (query[0] === "*") ? query.replace("*",".*") : query;
-  //           return [proteomicsURL,
-  //             'q={"','protein names','":{"$regex":"^',query,'", "$options":"i"}}',
-  //             '&d=','protein names'].join('')
-  //         } ,
-  //
-  //         dataType: 'jsonp',
-  //
-  //
-  //
-  //         filter: function(response){
-  //           datumLists.Modifications = [];
-  //           var auto_data = [];
-  //           var object_map = {};
-  //
-  //           // for each item, pull out its cell_id and use that for the
-  //           // autocomplete value. Build a datum of other relevant data
-  //           // for use in suggestion displays
-  //           response.forEach(function(element){
-  //             auto_data.push(element);
-  //             object_map[element] = element;
-  //           });
-  //
-  //           // make sure we only show unique items
-  //           auto_data = _.uniq(auto_data);
-  //
-  //
-  //           // build a list of datum objects
-  //           auto_data.forEach(function(item){
-  //             var datum = {
-  //               value: item,
-  //               tokens: [item],
-  //               data: object_map[item]
-  //             }
-  //             _.extend(datum,{
-  //               type: 'Protein',
-  //               search_column: 'protein names',
-  //               color: '#ff66cc',
-  //             });
-  //             datumLists.Modifications.push(datum);
-  //           });
-  //
-  //           // return the processed list of datums for the autocomplete
-  //           return datumLists.Modifications;
-  //         }
-  //       }
-  //     }
-  //   }
-  // );
 }

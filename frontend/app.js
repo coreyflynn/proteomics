@@ -27,9 +27,6 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('/barista_config.json',function(req,res){
-    res.json({"user_key":"I have no key"});
-})
 app.get('/', routes.index);
 
 http.createServer(app).listen(app.get('port'), function(){

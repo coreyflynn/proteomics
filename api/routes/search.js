@@ -25,45 +25,57 @@ Array.prototype.unique = function() {
 router.use('/experiments', experiments);
 
 router.get('/', function(req, res) {
+
     var query     = {};
     var retCols   = {};
     var colsToAdd = [];
     var distinct  = req.query.d;
-	console.log("wat");
-    try {query     = JSON.parse(req.query.q);}
-    catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()});return;}
+    var lim       = 10;
 
+    // PARAM SETUP
+
+    //- Q - Query criteria
+    try {query     = JSON.parse(req.query.q);}
+    catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()}); return;}
+
+    //- F - Fields to return
     if (req.query.f != null) {
         try {retCols   = JSON.parse(decodeURIComponent(req.query.f));}
-        catch (e) {res.jsonp({error:"Problem parsing return values"});return;}
+        catch (e) {res.jsonp({error:"Problem parsing return values"}); return;}
     }
 
+    //- COL - Collections to comb
     if (req.query.col == null)
         colsToAdd = ["evidence","modificationSpecificPeptides","peptides","proteinGroups"];
     else
         try {colsToAdd = JSON.parse(req.query.col);}
-        catch (e) {res.jsonp({error:"Problem parsing collections"});return;}
+        catch (e) {res.jsonp({error:"Problem parsing collections"}); return;}
 
+    //- D - Distinct
     if (distinct != null) {
         results = [];
     }
     else results = {};
 
+    //- L - Limit to
+    if (req.query.l != null) {
+        try {lim = req.query.l;}
+        catch (e) {res.json({error:"Problem parsing limit parameter", exception: e.toString()}); return;}
+    }
+
     /////////////////////////////////////////////////////
         /* Two steps to be run in series:
         *    1. Make the calls to the database (in parallel)
-        *    2. Make array unique
+        *    2. Unique array and print results
         *    Callback: Print JSON results */
     /////////////////////////////////////////////////////
 
-    // async.series([
-
     // Step 1 - Make DB calls in parallel
     /////////////////////////////////////
-    // function (outerCB) {
+
     async.parallel([
 
-    // EVIDENCE //
+        // EVIDENCE //
         function (callback) {
             if (colsToAdd.indexOf('evidence') > -1) {
                 if (distinct != null) {
@@ -78,7 +90,7 @@ router.get('/', function(req, res) {
                     });
                 }
                 else {
-                    evidence.find(query, retCols, function (error, queryResults) {
+                    evidence.find(query, retCols).limit(lim).exec(function (error, queryResults) {
                         callback(error, {evidence: queryResults});
                     });
                 }
@@ -86,7 +98,7 @@ router.get('/', function(req, res) {
             else {callback();}
         },
 
-    // MODIFICATION SPECIFIC PEPTIDES //
+        // MODIFICATION SPECIFIC PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
                 if (distinct != null) {
@@ -101,7 +113,7 @@ router.get('/', function(req, res) {
                     });
                 }
                 else {
-                    modspecpeptides.find(query, retCols, function (error, queryResults) {
+                    modspecpeptides.find(query, retCols).limit(lim).exec(function (error, queryResults) {
                         callback(error, {modificationSpecificPeptides: queryResults});
                     });
                 }
@@ -109,7 +121,7 @@ router.get('/', function(req, res) {
             else {callback();}
         },
 
-    // PEPTIDES //
+        // PEPTIDES //
         function (callback) {
             if (colsToAdd.indexOf('peptides') > -1) {
                 if (distinct != null) {
@@ -124,7 +136,7 @@ router.get('/', function(req, res) {
                     });
                 }
                 else {
-                    peptides.find(query, retCols, function (error, queryResults) {
+                    peptides.find(query, retCols).limit(lim).exec(function (error, queryResults) {
                         callback(error, {peptides: queryResults});
                     });
                 }
@@ -132,7 +144,7 @@ router.get('/', function(req, res) {
             else {callback();}
         },
 
-    // PROTEIN GROUPS //
+        // PROTEIN GROUPS //
         function (callback) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
                 if (distinct != null) {
@@ -147,7 +159,7 @@ router.get('/', function(req, res) {
                     });
                 }
                 else {
-                    proteingroups.find(query, retCols, function (error, queryResults) {
+                    proteingroups.find(query, retCols).limit(lim).exec(function (error, queryResults) {
                         callback(error, {proteinGroups: queryResults});
                     });
                 }
@@ -156,99 +168,67 @@ router.get('/', function(req, res) {
         }
     ],
 
-    // // All DB calls made - proceed to step 2
-    //     function (error,results) {
-    //         if(error)
-    //             console.log(error);
-    //
-    //         outerCB();
-    //     })
-    //
-    // },
-    //
-    // // Step 2 - Make array unique
-    // /////////////////////////////
-    // function (outerCB) {
-    //   if (distinct != null) {
-    //
-    //         // Make array unique, then alphabetize.
-    //         results = results.unique();
-    //         results.sort(function(a, b) {
-    //             if (a.toLowerCase() < b.toLowerCase()) return -1;
-    //             if (a.toLowerCase() > b.toLowerCase()) return 1;
-    //             return 0;
-    //         });
-    //
-    //         // Check regex one more time to remove arrayed objects.
-    //         for (var key in query) {
-    //
-    //             // Is it a regex or a string?
-    //             if (typeof query[key] == 'string')
-    //                 var regexp = new RegExp(query[key]);
-    //             else
-    //                 var regexp = new RegExp(query[key]['$regex']);
-    //
-    //     var index;
-    //             for (index = 0; index < results.length; index++) {
-    //                 if (!regexp.test(results[index])) {
-    //                     results.splice(index, 1); index--;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //         outerCB();
-    // }
+    // Step 2 - Unique array and print results
+    //////////////////////////////////////////
 
-    // ],
+    function (error, asyncResults) {
 
-    // Callback - print JSON results
-    ////////////////////////////////
-    function (error,asyncResults) {
-        var results;
         if(error)
             console.log(error);
 
-        /**
-         * if the returned results are arrays, concatenate them and return them.
-         Otherwise, package the results up as an object
-         */
+        /*
+        if the returned results are arrays, concatenate them and return them.
+        Otherwise, package the results up as an object
+        */
 
-        if (asyncResults[0].constructor === Array){
-          results = [];
-          asyncResults.forEach(function(res){
-            results = results.concat(res);
-          });
-          results = results.unique();
-          results.sort(function(a, b) {
-              if (a.toLowerCase() < b.toLowerCase()) return -1;
-              if (a.toLowerCase() > b.toLowerCase()) return 1;
-              return 0;
-          });
-          // Check regex one more time to remove arrayed objects.
-          for (var key in query) {
+        var results;
 
-            // Is it a regex or a string?
-            if (typeof query[key] == 'string'){
-                var regexp = new RegExp(query[key],'i');
-            }else{
-              var regexp = new RegExp(query[key]['$regex'],'i');
-            }
+        if (asyncResults[0].constructor === Array) {
 
-            var matches = [];
-            results.forEach(function(res){
-              if (regexp.test(res)) {
-                matches.push(res)
-              }
+            // Combine and uniquify the arrays of results
+            results = [];
+            asyncResults.forEach(function(res) {
+                results = results.concat(res);
             });
-            results = matches;
-          }
-        }else{
-          results = {};
-          asyncResults.forEach(function(res){
-            for (var attr in res) { results[attr] = res[attr]; }
-          });
+            results = results.unique();
+            results.sort(function(a, b) {
+                if (a.toLowerCase() < b.toLowerCase()) return -1;
+                if (a.toLowerCase() > b.toLowerCase()) return 1;
+                return 0;
+            });
+
+            // Check regex one more time to remove arrayed objects.
+            for (var key in query) {
+
+                // Is it a regex or a string?
+                if (typeof query[key] == 'string') {
+                    var regexp = new RegExp(query[key],'i');
+                }
+                else {
+                    var regexp = new RegExp(query[key]['$regex'],'i');
+                }
+
+                var matches = [];
+                results.forEach(function(res){
+                    if (regexp.test(res)) {
+                        matches.push(res);
+                    }
+                });
+                results = matches;
+            }
         }
+
+        else {
+            results = {};
+            asyncResults.forEach(function(res){
+                for (var attr in res) {
+                    results[attr] = res[attr];
+                }
+            });
+        }
+
         res.jsonp(results);
+
     });
 
 });

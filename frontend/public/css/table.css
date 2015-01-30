@@ -30,3 +30,14 @@
     font-size: 1.25rem;
     height: 2.0225rem;
 }
+
+.table-export-text {
+  color: #aaaaaa;
+  cursor: pointer;
+  transition: color 300ms linear;
+  padding-right: 4px;
+}
+
+.table-export-text:hover {
+  color: #00ccff;
+}
