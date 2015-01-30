@@ -80,13 +80,7 @@ router.get('/', function(req, res) {
             if (colsToAdd.indexOf('evidence') > -1) {
                 if (distinct != null) {
                     evidence.distinct(distinct, query, function (error, queryResults) {
-<<<<<<< HEAD:routes/search.js
-                        try{results = results.concat(queryResults);}
-                        catch (e) {console.log("Problem with concat...");}
-                        callback();
-=======
                         callback(error, queryResults);
->>>>>>> 4c4fd47e9ff4615d0c537afde137ec59d994d58e:api/routes/search.js
                     });
                 }
                 else {
@@ -103,13 +97,7 @@ router.get('/', function(req, res) {
             if (colsToAdd.indexOf('modificationSpecificPeptides') > -1) {
                 if (distinct != null) {
                     modspecpeptides.distinct(distinct, query, function (error, queryResults) {
-<<<<<<< HEAD:routes/search.js
-                        try{results = results.concat(queryResults);}
-                        catch (e) {console.log("Problem with concat...");}
-                        callback();
-=======
                         callback(error, queryResults);
->>>>>>> 4c4fd47e9ff4615d0c537afde137ec59d994d58e:api/routes/search.js
                     });
                 }
                 else {
@@ -126,13 +114,7 @@ router.get('/', function(req, res) {
             if (colsToAdd.indexOf('peptides') > -1) {
                 if (distinct != null) {
                     peptides.distinct(distinct, query, function (error, queryResults) {
-<<<<<<< HEAD:routes/search.js
-                        try{results = results.concat(queryResults);}
-                        catch (e) {console.log("Problem with concat...");}
-                        callback();
-=======
                         callback(error, queryResults);
->>>>>>> 4c4fd47e9ff4615d0c537afde137ec59d994d58e:api/routes/search.js
                     });
                 }
                 else {
@@ -149,13 +131,7 @@ router.get('/', function(req, res) {
             if (colsToAdd.indexOf('proteinGroups') > -1) {
                 if (distinct != null) {
                     proteingroups.distinct(distinct, query, function (error, queryResults) {
-<<<<<<< HEAD:routes/search.js
-                        try{results = results.concat(queryResults);}
-                        catch (e) {console.log("Problem with concat...");}
-                        callback();
-=======
                         callback(error, queryResults);
->>>>>>> 4c4fd47e9ff4615d0c537afde137ec59d994d58e:api/routes/search.js
                     });
                 }
                 else {
