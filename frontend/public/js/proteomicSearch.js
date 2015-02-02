@@ -106,9 +106,11 @@ pathTable.onSort.subscribe(function (e, args) {
 $('#apiError').css('opacity',0);
 $('#evidenceContainer').css('opacity',0);
 $('#pathTable').css('opacity',0);
+$('#sequenceViewsContainer').css('opacity',0);
 $('#evidenceTableTSV').click(function(){exportTable(evidenceTable);});
 $('#evidenceTableCSV').click(function(){exportTable(evidenceTable, 'csv');});
 $('#evidenceTablePNG').click(function(){exportTable(evidenceTable, 'png');});
+$('#sequenceViewsPNG').click(function(){exportSequenceViews();});
 
 // try to make a call to the proteomics API and let the user know if it fails
 (function(){$.ajax({
@@ -150,6 +152,7 @@ evidenceTableSorter = function evidenceTableSorter (e, args){
     return 0;
   });
   updateTables();
+  drawSequences();
 }
 
 /**
@@ -193,7 +196,6 @@ updateTables = function updateTables () {
   pathTable.render();
 
   resizeTables();
-  drawSequences();
 }
 
 /**
@@ -276,6 +278,7 @@ handleSearch = function handleSearch (e) {
           })
 
           updateTables();
+          drawSequences();
 
           if (evidenceData.length){
             $('#evidenceContainer').animate({opacity:1},600);
@@ -330,8 +333,9 @@ handleSearch = function handleSearch (e) {
     evidenceData = [];
     pathData = [];
     updateTables();
-    $('#evidenceContainer').animate({opacity:0},600);
     $('#pathTable').animate({opacity:0},600);
+    $('#evidenceContainer').animate({opacity:0},600);
+    $('#sequenceViewsContainer').animate({opacity:0},600);
   }
 }
 
@@ -380,33 +384,33 @@ function resizeTables() {
  * Utility to draw sequence diagrams based on the sequences observed
  */
 function drawSequences() {
-  var $container = $('#sequenceViews'),
-      $sequenceViews = $container.children();
+  var $container = $('#sequenceViewsContainer'),
+      $sequenceViewDiv = $('#sequenceViews'),
+      $sequenceViews = $sequenceViewDiv.children();
       sequences = _.pluck(evidenceTable.getData().getItems(),'sequence');
 
-  $sequenceViews.each(function() {
-    $(this).finish();
-    $(this).animate({'opacity':0}, 600);
-    setTimeout(function(){
-      $container.empty();
-    },600);
-  });
+  $container.finish();
+  $container.animate({'opacity':0}, 600);
+  sequenceContainerTimer = setTimeout(function(){
+    $sequenceViewDiv.empty();
+  },600);
 
-  setTimeout(function(){
-    sequenceViews = [];
-    sequenceModels = [];
-    $container.finish();
-    $container.css('opacity',0);
+  if (sequences.length) {
 
-    sequences.forEach(function(sequence,i) {
-      var id = 'sequence' + i;
-      $container.append('<div id="' + id + '" class="col-xs-4"></div>');
-      sequenceModels.push(new Barista.Models.SequenceModel());
-      sequenceViews.push(new Barista.Views.SequenceView({el:$('#' + id), model: sequenceModels[i], png: false}));
-      sequenceViews[i].model.set({sequence:sequence});
-    });
-    $container.animate({'opacity':1},600);
-  }, 600);
+    sequenceAnimationTimer = setTimeout(function(){
+      sequenceViews = [];
+      sequenceModels = [];
+
+      sequences.forEach(function(sequence,i) {
+        var id = 'sequence' + i;
+        $sequenceViewDiv.append('<div id="' + id + '" class="col-xs-4"></div>');
+        sequenceModels.push(new Barista.Models.SequenceModel());
+        sequenceViews.push(new Barista.Views.SequenceView({el:$('#' + id), model: sequenceModels[i], png: false}));
+        sequenceViews[i].model.set({sequence:sequence});
+      });
+      $container.animate({'opacity':1},600);
+    }, 600);
+  }
 
 }
 
