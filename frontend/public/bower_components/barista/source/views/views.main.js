@@ -6718,6 +6718,9 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
     // render modifications
     this.renderModifications();
 
+    // render modifications text
+    // this.renderModificationsText();
+
     // configure zooming
     this.setupZoom();
 
@@ -6775,22 +6778,85 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
     this.fg_layer.selectAll('.sequenceModification').data([]).exit().remove();
     this.fg_layer.selectAll('.sequenceModification')
       .data(this.model.get('modifications').models).enter()
-      .append('circle')
-      .attr('r', 10)
-      .attr('fill', function(d) {
-        var color = self.modificationColors[d.get('modification')];
-        if (color === undefined) {
-          return '#BDBDBD';
-        } else {
-          return color;
-        }
-      })
-      .attr('cx', function(d) {
+      .append('g')
+      .each(function(d) {
+
+        d3.select(this)
+        .append('circle')
+        .attr("class","sequenceModification")
+        .attr('r', 10)
+        .attr('fill', function(d) {
+          var color = self.modificationColors[d.get('modification')];
+          if (color === undefined) {
+            return '#BDBDBD';
+          } else {
+            return color;
+          }
+        })
+        .attr('cx', function(d) {
+          var totalLength = self.model.get('displaySequence').length,
+              positionPct = d.get('index') / totalLength;
+          return positionPct * (renderLength) + 10;
+        })
+        .attr("cy",self.height / 2);
+
+        d3.select(this)
+        .append('text')
+        .attr("class","sequenceModificationText")
+        .attr('x', function(d) {
+          var totalLength = self.model.get('displaySequence').length,
+              positionPct = d.get('index') / totalLength;
+          switch (self.model.get('displaySequence')[d.get('index') - 1]) {
+            case 'M':
+              return positionPct * (renderLength) + 4;
+              break;
+            default:
+              return positionPct * (renderLength) + 5;
+          }
+
+        })
+        .attr("y",self.height / 2 + 5)
+        .text(function (d) {
+          return self.model.get('displaySequence')[d.get('index') - 1];
+        })
+        .attr('fill','white')
+        .attr('font-family','Open Sans')
+        .attr('font-weight', 'bold');
+
+      });
+  },
+
+  /**
+   * renders text overlays for modifications
+   */
+  renderModificationsText: function() {
+    var self = this,
+        renderLength = this.getRenderLength();
+
+    this.fg_layer.selectAll('.sequenceModificationText').data([]).exit().remove();
+    this.fg_layer.selectAll('.sequenceModificationText')
+      .data(this.model.get('modifications').models).enter()
+      .append('text')
+      .attr("class","sequenceModificationText")
+      .attr('x', function(d) {
         var totalLength = self.model.get('displaySequence').length,
             positionPct = d.get('index') / totalLength;
-        return positionPct * (renderLength) + 10;
+        switch (self.model.get('displaySequence')[d.get('index') - 1]) {
+          case 'M':
+            return positionPct * (renderLength) + 4;
+            break;
+          default:
+            return positionPct * (renderLength) + 5;
+        }
+
       })
-      .attr("cy",this.height / 2);
+      .attr("y",this.height / 2 + 5)
+      .text(function (d) {
+        return self.model.get('displaySequence')[d.get('index') - 1];
+      })
+      .attr('fill','white')
+      .attr('font-family','Open Sans')
+      .attr('font-weight', 'bold');
   },
 
   /**
@@ -6805,7 +6871,6 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
 
     // function for handling zoom event
     function zoomHandler() {
-      console.log(d3.event.translate,d3.event.scale);
       self.fg_layer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
     }
 

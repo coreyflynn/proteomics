@@ -34,11 +34,11 @@
   "resolutions": {
     "bootstrap": "~3.3.0"
   },
-  "_release": "25418fb5e6",
+  "_release": "eca035b2c3",
   "_resolution": {
     "type": "branch",
     "branch": "develop",
-    "commit": "25418fb5e659863d5bdd685a1aa8196968cca09c"
+    "commit": "eca035b2c394da26af329dfe8ca16edee7c4deec"
   },
   "_source": "git@github.com:cmap/barista.git",
   "_target": "develop",
