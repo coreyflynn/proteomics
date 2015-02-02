@@ -10033,9 +10033,12 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
     //set up default sequenceUnitSize
     this.sequenceUnitSize = (this.options.sequenceUnitSize !== undefined) ? this.options.sequenceUnitSize : 5;
 
-
     // initialize the base view
     this.base_initialize();
+
+    // add a class to denote the widget type
+    var $div = $("#" + this.div_string);
+    $div.addClass("barista-sequence-view");
   },
 
   /**
@@ -10052,6 +10055,9 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
 
     // render modifications
     this.renderModifications();
+
+    // configure zooming
+    this.setupZoom();
 
     return this;
   },
@@ -10123,6 +10129,26 @@ Barista.Views.SequenceView = Barista.Views.BaristaBaseView.extend({
         return positionPct * (renderLength) + 10;
       })
       .attr("cy",this.height / 2);
+  },
+
+  /**
+   * configure zoom behavior
+   */
+  setupZoom: function () {
+    var self = this;
+    // create the zoom listener
+    var zoomListener = d3.behavior.zoom()
+      .scaleExtent([1, 3])
+      .on("zoom", zoomHandler);
+
+    // function for handling zoom event
+    function zoomHandler() {
+      console.log(d3.event.translate,d3.event.scale);
+      self.fg_layer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
+
+    // apply the zoom behavior to the svg image
+    zoomListener(this.vis);
   }
 
 });
