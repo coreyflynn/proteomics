@@ -384,20 +384,11 @@ function drawSequences() {
       $sequenceViews = $container.children();
       sequences = _.pluck(evidenceTable.getData().getItems(),'sequence');
 
-  $sequenceViews.each(function() {
-    $(this).finish();
-    $(this).animate({'opacity':0}, 600);
-    setTimeout(function(){
-      $container.empty();
-    },600);
-  });
-
-  setTimeout(function(){
+  $container.empty();
+  $container.finish();
+  if (sequences.length) {
     sequenceViews = [];
     sequenceModels = [];
-    $container.finish();
-    $container.css('opacity',0);
-
     sequences.forEach(function(sequence,i) {
       var id = 'sequence' + i;
       $container.append('<div id="' + id + '" class="col-xs-4"></div>');
@@ -406,7 +397,9 @@ function drawSequences() {
       sequenceViews[i].model.set({sequence:sequence});
     });
     $container.animate({'opacity':1},600);
-  }, 600);
+  } else {
+    $container.animate({'opacity':0}, 600);
+  }
 
 }
 
