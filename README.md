@@ -12,7 +12,7 @@ and set specific collections to be queried.
 
 <b>Example URL</b>
 
-```http://(DNS of box):3000/search?col=[]&q={}&f={}&r=&d=```
+```http://(DNS of box):3000/search?q={}&col=[]&f={}&d=```
 <hr>
 <b>Q</b>uery
 ```
