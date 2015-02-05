@@ -10,9 +10,9 @@ The API is created with the Node.js MVC framework, and utilizes Express.js. It a
 to access the data in Mongo securely and efficiently. One can add query parameters, return fields, distinct keys, 
 and set specific collections to be queried.
 
-<b>Example URL</b>
+<b>Example URL template</b>
 
-```http://(DNS of box):3000/search?q={}&col=[]&f={}&d=```
+```http://(DNS of box):3000/search?q={}&col=[]&f={}&d=&l=```
 <hr>
 <b>Q</b>uery
 ```
@@ -45,7 +45,12 @@ d   (optional): ex - d=gene names
                 DOES NOT USE QUOTES. Overrides f param, returns only given field, and only distinct
                 values of that key.
 ```
-
+<hr>
+<b>L</b>imit results
+```
+l   (optional): ex - l=5
+                Limits the number of results to the specified number. Defaults to 20.
+```
 
 
 <h3>Ingestion</h3>
