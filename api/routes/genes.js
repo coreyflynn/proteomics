@@ -19,6 +19,6 @@ router.get('/', function(req, res) {
 			res.jsonp(queryResults);
 	})
 
-};
+});
 
 module.exports = router;
