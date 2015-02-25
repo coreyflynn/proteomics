@@ -23,6 +23,7 @@ var evidenceData = [],
 // Set up the default entry point for API calls
 // proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
 proteomicsURL = 'http://localhost:3000/search?';
+newURL = 'http://massive.broadinstitute.com:3000/search/';
 
 
 /*************************
@@ -208,24 +209,29 @@ handleSearch = function handleSearch (e) {
 
   if (e.val.length){
     var fieldMap = {
-      '': 'gene names',
-      Gene:'gene names',
+      '': 'gene',
+      Gene:'gene',
       Modification: 'modifications',
       Protein: 'protein names'
     }
 
+    var URLMap = {
+      '': 'genes',
+      Gene:'genes',
+      Modification: 'modifications',
+      Protein: 'proteins'
+    }
+
       params = {
-        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
-        f: '{"modified sequence":1,"intensity":1,"modifications":1}',
-        col: '["evidence"]',
-        l: 1000
+        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join('')
       }
 
       $.ajax({
         dataType: 'jsonp',
-        url: proteomicsURL,
+        url: proteomicsURL + URLMap[e.type],
         data: params,
         success: function (res) {
+
           $('#apiError').animate({'opacity':0},600);
 
           var elements  = [], seqCounts = [], mods = [];
@@ -234,10 +240,11 @@ handleSearch = function handleSearch (e) {
           _.keys(res).forEach(function(key,i){
             res[key].forEach(function(element,j){
               elements.push(element);
+              alert(element);
             });
           })
 
-          seqCounts = _.countBy(elements, function (element) {
+          /*seqCounts = _.countBy(elements, function (element) {
             return element['modified sequence'];
           });
 
@@ -273,7 +280,7 @@ handleSearch = function handleSearch (e) {
           _.keys(seqCounts).forEach(function(seq,i){
             var avg = (intenSums[seq]/seqCounts[seq]);
             evidenceData.push({id:i,sequence:seq,modifications:mods[seq],count:seqCounts[seq],totInten:intenSums[seq],avgInten:avg});
-          })
+          })*/
 
           updateTables();
 
@@ -301,7 +308,7 @@ handleSearch = function handleSearch (e) {
 
     $.ajax({
       dataType: 'jsonp',
-      url: proteomicsURL.slice(0,-1) + '/experiments?',
+      url: newURL + 'experiments?',
       data: params,
       success: function (res) {
         $('#apiError').animate({'opacity':0},600);
@@ -485,7 +492,7 @@ function exportTable(table,method) {
  * Wrapper function to add custom datasets to Barista so our search
  * box can use them
  */
-function addDataset(name, field, type, color){
+function addDataset(name, collection, type, color){
   var filterFunction = function(response){
     var datum_list = [];
     var auto_data = [];
@@ -508,7 +515,7 @@ function addDataset(name, field, type, color){
       }
       _.extend(datum,{
         type: type,
-        search_column: field,
+        collection: collection,
         color: color,
       });
       datum_list.push(datum);
@@ -551,8 +558,8 @@ function addDataset(name, field, type, color){
 }
 
 function configureDatasets() {
-  addDataset('ProteomicsGeneNames','gene names','Gene','#00ccff');
-  addDataset('ProteomicsProteinNames','protein names','Protein','#ff66cc');
+  addDataset('ProteomicsGeneNames','geneNames','Gene','#00ccff');
+  addDataset('ProteomicsProteinNames','proteinNames','Protein','#ff66cc');
   addDataset('ProteomicsModificationNames','modifications','Modification','#996600');
 
 }
