@@ -225,6 +225,8 @@ handleSearch = function handleSearch (e) {
         q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join('')
       }
 
+      alert(newURL + URLMap[e.type] + " with params: " + [params])
+
       $.ajax({
         dataType: 'jsonp',
         url: newURL + URLMap[e.type],
@@ -285,6 +287,8 @@ handleSearch = function handleSearch (e) {
           }
           },
         error: function (jqXHR, textStatus) {
+
+          alert("FAIL");
           if (textStatus === 'error'){
             $('#apiError').animate({'opacity':1},600);
             $('#evidenceContainer').animate({opacity:0},600);
