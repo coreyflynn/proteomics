@@ -64,7 +64,6 @@ pathDataView = new Slick.Data.DataView({ inlineFilters: true });
 
 evidenceTableColumns = [
   { id: "sequence", name: "Sequence", field:"sequence",sortable: true},
-  { id: "modifications", name: "Modifications", field:"modifications",sortable: true},
   { id: "count", name: "Count", field:"count",sortable: true},
   { id: "totInten", name: "Total Intensity", field:"totInten",sortable: true},
   { id: "avgInten", name: "Average Intensity", field:"avgInten",sortable: true},
@@ -114,8 +113,8 @@ $('#evidenceTablePNG').click(function(){exportTable(evidenceTable, 'png');});
 // try to make a call to the proteomics API and let the user know if it fails
 (function(){$.ajax({
   dataType: 'jsonp',
-  url: proteomicsURL,
-  data: {q:'{"gene names":"ACTB"}',d:'gene names'},
+  url: newURL + 'gene?',
+  data: {q:'{"gene":"ACTB"}',d:'gene names'},
   error: function (jqXHR, textStatus) {
     if (textStatus === 'error'){
       $('#apiError').animate({'opacity':1},600);
@@ -223,10 +222,8 @@ handleSearch = function handleSearch (e) {
     }
 
       params = {
-        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join('')
+        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join('')
       }
-
-      alert("Type is " + URLMap[e.type] + ", so URL is: " + proteomicsURL + URLMap[e.type])
 
       $.ajax({
         dataType: 'jsonp',
@@ -239,12 +236,7 @@ handleSearch = function handleSearch (e) {
           var elements  = [], seqCounts = [], mods = [];
           sequences = []; intenSums = [];evidenceData = [];
 
-          _.keys(res).forEach(function(key,i){
-            res[key].forEach(function(element,j){
-              elements.push(element);
-              alert(element);
-            });
-          })
+          alert(res);
 
           /*seqCounts = _.countBy(elements, function (element) {
             return element['modified sequence'];
@@ -284,7 +276,7 @@ handleSearch = function handleSearch (e) {
             evidenceData.push({id:i,sequence:seq,modifications:mods[seq],count:seqCounts[seq],totInten:intenSums[seq],avgInten:avg});
           })*/
 
-          updateTables();
+          //updateTables();
 
           if (evidenceData.length){
             $('#evidenceContainer').animate({opacity:1},600);
