@@ -300,39 +300,6 @@ handleSearch = function handleSearch (e) {
         }
       });
 
-
-    params = {
-      q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
-      l: 1000
-    }
-
-    $.ajax({
-      dataType: 'jsonp',
-      url: newURL + 'experiments?',
-      data: params,
-      success: function (res) {
-        $('#apiError').animate({'opacity':0},600);
-        pathData = [];
-        res.forEach(function(element,j){
-          pathData.push(_.extend(element,{id:element._id}));
-        });
-        updateTables();
-        if (pathData.length) {
-          $('#pathTable').animate({opacity:1},600);
-        }else{
-          $('#pathTable').animate({opacity:0},600);
-        }
-      },
-      error: function (jqXHR, textStatus) {
-        if (textStatus === 'error'){
-          $('#apiError').animate({'opacity':1},600);
-          $('#pathTable').animate({opacity:0},600);
-        }else{
-          console.log(jqXHR);
-        }
-      }
-    });
-
   }else{
     evidenceData = [];
     pathData = [];
