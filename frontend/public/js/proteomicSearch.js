@@ -113,8 +113,8 @@ $('#evidenceTablePNG').click(function(){exportTable(evidenceTable, 'png');});
 // try to make a call to the proteomics API and let the user know if it fails
 (function(){$.ajax({
   dataType: 'jsonp',
-  url: newURL + 'gene?',
-  data: {q:'{"gene":"ACTB"}',d:'gene names'},
+  url: newURL + 'genes?',
+  data: {q:'{"gene":"ACTB"}'},
   error: function (jqXHR, textStatus) {
     if (textStatus === 'error'){
       $('#apiError').animate({'opacity':1},600);
@@ -229,7 +229,7 @@ handleSearch = function handleSearch (e) {
 
       $.ajax({
         dataType: 'jsonp',
-        url: newURL + URLMap[e.type],
+        url: newURL + 'genes',
         data: params,
         success: function (res) {
 
