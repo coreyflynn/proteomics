@@ -22,8 +22,8 @@ var evidenceData = [],
 
 // Set up the default entry point for API calls
 // proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
-proteomicsURL = 'http://localhost:3000/search?';
-newURL = 'http://massive.broadinstitute.com:3000/search/';
+proteomicsURL = 'http://massive.broadinstitute.org:3000/search/';
+newURL = 'http://massive.broadinstitute.org:3000/search/';
 
 
 /*************************
@@ -226,9 +226,11 @@ handleSearch = function handleSearch (e) {
         q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join('')
       }
 
+      alert("Type is " + URLMap[e.type] + ", so URL is: " + proteomicsURL + URLMap[e.type])
+
       $.ajax({
         dataType: 'jsonp',
-        url: proteomicsURL + URLMap[e.type],
+        url: newURL + URLMap[e.type],
         data: params,
         success: function (res) {
 
@@ -511,9 +513,8 @@ function addDataset(name, collection, type, color){
 
       replace: function(url, query){
         query = (query[0] === "*") ? query.replace("*",".*") : query;
-        return [proteomicsURL,
-          'q={"',field,'":{"$regex":"^',query,'", "$options":"i"}}',
-          '&d=',field].join('')
+        return [newURL,
+          'q={"',collection,'":{"$regex":"^',query,'", "$options":"i"}}'].join('')
       } ,
 
       dataType: 'jsonp',
@@ -525,7 +526,7 @@ function addDataset(name, collection, type, color){
 }
 
 function configureDatasets() {
-  addDataset('ProteomicsGeneNames','geneNames','Gene','#00ccff');
+  addDataset('ProteomicsGeneNames','gene','Gene','#00ccff');
   addDataset('ProteomicsProteinNames','proteinNames','Protein','#ff66cc');
   addDataset('ProteomicsModificationNames','modifications','Modification','#996600');
 
