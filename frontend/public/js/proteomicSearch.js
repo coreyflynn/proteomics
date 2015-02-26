@@ -225,11 +225,9 @@ handleSearch = function handleSearch (e) {
         q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join('')
       }
 
-      alert(newURL + URLMap[e.type] + " with params: " + [params])
-
       $.ajax({
         dataType: 'jsonp',
-        url: newURL + 'genes',
+        url: newURL + fieldMap[e.type],
         data: params,
         success: function (res) {
 
@@ -238,7 +236,7 @@ handleSearch = function handleSearch (e) {
           var elements  = [], seqCounts = [], mods = [];
           sequences = []; intenSums = [];evidenceData = [];
 
-          alert(res);
+          alert(JSON.stringify(res[0]));
 
           /*seqCounts = _.countBy(elements, function (element) {
             return element['modified sequence'];
