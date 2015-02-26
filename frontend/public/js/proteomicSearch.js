@@ -22,8 +22,7 @@ var evidenceData = [],
 
 // Set up the default entry point for API calls
 // proteomicsURL = 'http://ec2-54-68-96-157.us-west-2.compute.amazonaws.com:3000/search?';
-proteomicsURL = 'http://massive.broadinstitute.org:3000/search/';
-newURL = 'http://massive.broadinstitute.org:3000/search/';
+proteomicsURL = 'http://localhost:3000/search?';
 
 
 /*************************
@@ -64,6 +63,7 @@ pathDataView = new Slick.Data.DataView({ inlineFilters: true });
 
 evidenceTableColumns = [
   { id: "sequence", name: "Sequence", field:"sequence",sortable: true},
+  { id: "modifications", name: "Modifications", field:"modifications",sortable: true},
   { id: "count", name: "Count", field:"count",sortable: true},
   { id: "totInten", name: "Total Intensity", field:"totInten",sortable: true},
   { id: "avgInten", name: "Average Intensity", field:"avgInten",sortable: true},
@@ -113,8 +113,8 @@ $('#evidenceTablePNG').click(function(){exportTable(evidenceTable, 'png');});
 // try to make a call to the proteomics API and let the user know if it fails
 (function(){$.ajax({
   dataType: 'jsonp',
-  url: newURL + 'genes?',
-  data: {q:'{"gene":"ACTB"}'},
+  url: proteomicsURL,
+  data: {q:'{"gene names":"ACTB"}',d:'gene names'},
   error: function (jqXHR, textStatus) {
     if (textStatus === 'error'){
       $('#apiError').animate({'opacity':1},600);
@@ -208,37 +208,36 @@ handleSearch = function handleSearch (e) {
 
   if (e.val.length){
     var fieldMap = {
-      '': 'gene',
-      Gene:'gene',
+      '': 'gene names',
+      Gene:'gene names',
       Modification: 'modifications',
       Protein: 'protein names'
     }
 
-    var URLMap = {
-      '': 'genes',
-      Gene:'genes',
-      Modification: 'modifications',
-      Protein: 'proteins'
-    }
-
       params = {
-        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'"}}'].join('')
+        q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
+        f: '{"modified sequence":1,"intensity":1,"modifications":1}',
+        col: '["evidence"]',
+        l: 1000
       }
 
       $.ajax({
         dataType: 'jsonp',
-        url: newURL + fieldMap[e.type],
+        url: proteomicsURL,
         data: params,
         success: function (res) {
-
           $('#apiError').animate({'opacity':0},600);
 
           var elements  = [], seqCounts = [], mods = [];
           sequences = []; intenSums = [];evidenceData = [];
 
-          alert(JSON.stringify(res[0]));
+          _.keys(res).forEach(function(key,i){
+            res[key].forEach(function(element,j){
+              elements.push(element);
+            });
+          })
 
-          /*seqCounts = _.countBy(elements, function (element) {
+          seqCounts = _.countBy(elements, function (element) {
             return element['modified sequence'];
           });
 
@@ -274,9 +273,9 @@ handleSearch = function handleSearch (e) {
           _.keys(seqCounts).forEach(function(seq,i){
             var avg = (intenSums[seq]/seqCounts[seq]);
             evidenceData.push({id:i,sequence:seq,modifications:mods[seq],count:seqCounts[seq],totInten:intenSums[seq],avgInten:avg});
-          })*/
+          })
 
-          //updateTables();
+          updateTables();
 
           if (evidenceData.length){
             $('#evidenceContainer').animate({opacity:1},600);
@@ -285,8 +284,6 @@ handleSearch = function handleSearch (e) {
           }
           },
         error: function (jqXHR, textStatus) {
-
-          alert("FAIL");
           if (textStatus === 'error'){
             $('#apiError').animate({'opacity':1},600);
             $('#evidenceContainer').animate({opacity:0},600);
@@ -295,6 +292,39 @@ handleSearch = function handleSearch (e) {
           }
         }
       });
+
+
+    params = {
+      q: ['{"',fieldMap[e.type],'":{"$regex":"^',e.val,'", "$options":"i"}}'].join(''),
+      l: 1000
+    }
+
+    $.ajax({
+      dataType: 'jsonp',
+      url: proteomicsURL.slice(0,-1) + '/experiments?',
+      data: params,
+      success: function (res) {
+        $('#apiError').animate({'opacity':0},600);
+        pathData = [];
+        res.forEach(function(element,j){
+          pathData.push(_.extend(element,{id:element._id}));
+        });
+        updateTables();
+        if (pathData.length) {
+          $('#pathTable').animate({opacity:1},600);
+        }else{
+          $('#pathTable').animate({opacity:0},600);
+        }
+      },
+      error: function (jqXHR, textStatus) {
+        if (textStatus === 'error'){
+          $('#apiError').animate({'opacity':1},600);
+          $('#pathTable').animate({opacity:0},600);
+        }else{
+          console.log(jqXHR);
+        }
+      }
+    });
 
   }else{
     evidenceData = [];
@@ -455,7 +485,7 @@ function exportTable(table,method) {
  * Wrapper function to add custom datasets to Barista so our search
  * box can use them
  */
-function addDataset(name, collection, type, color){
+function addDataset(name, field, type, color){
   var filterFunction = function(response){
     var datum_list = [];
     var auto_data = [];
@@ -478,7 +508,7 @@ function addDataset(name, collection, type, color){
       }
       _.extend(datum,{
         type: type,
-        collection: collection,
+        search_column: field,
         color: color,
       });
       datum_list.push(datum);
@@ -507,8 +537,9 @@ function addDataset(name, collection, type, color){
 
       replace: function(url, query){
         query = (query[0] === "*") ? query.replace("*",".*") : query;
-        return [newURL,
-          'q={"',collection,'":{"$regex":"^',query,'", "$options":"i"}}'].join('')
+        return [proteomicsURL,
+          'q={"',field,'":{"$regex":"^',query,'", "$options":"i"}}',
+          '&d=',field].join('')
       } ,
 
       dataType: 'jsonp',
@@ -520,8 +551,8 @@ function addDataset(name, collection, type, color){
 }
 
 function configureDatasets() {
-  addDataset('ProteomicsGeneNames','gene','Gene','#00ccff');
-  addDataset('ProteomicsProteinNames','proteinNames','Protein','#ff66cc');
+  addDataset('ProteomicsGeneNames','gene names','Gene','#00ccff');
+  addDataset('ProteomicsProteinNames','protein names','Protein','#ff66cc');
   addDataset('ProteomicsModificationNames','modifications','Modification','#996600');
 
 }
