@@ -17,20 +17,22 @@ router.get('/', function(req, res) {
 	
 	if (limit == null) limit = 20;
 
-	var toExec = geneNames.find(query,{"gene":1,"_id":0});
-
 	if (distinct != null) {
-		toExec = toExec.distinct(distinct);
+		geneNames.find(query,{"gene":1,"_id":0}).distinct(distinct).exec(function (error, queryResults) {
+			if (error)
+				console.log(error);
+			else
+				res.jsonp(queryResults);
+		});
 	}
-
-	toExec.limit(limit);
-
-	toExec.exec(function (error, queryResults) {
-		if (error)
-			console.log(error);
-		else
-			res.jsonp(queryResults);
-	})
+	else {
+		geneNames.find(query,{"gene":1,"_id":0}).limit(limit).exec(function (error, queryResults) {
+			if (error)
+				console.log(error);
+			else
+				res.jsonp(queryResults);
+		});
+	}
 
 });
 
