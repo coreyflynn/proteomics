@@ -19,8 +19,10 @@ router.get('/', function(req, res) {
 
 	var toExec = geneNames.find(query,{"gene":1,"_id":0}).limit(limit);
 
-	if (distinct != null)
+	if (distinct != null) {
+		alert("Distinct value: " + distinct)
 		toExec = toExec.distinct(distinct);
+	}
 
 	toExec.exec(function (error, queryResults) {
 		if (error)
