@@ -17,12 +17,13 @@ router.get('/', function(req, res) {
 	
 	if (limit == null) limit = 20;
 
-	var toExec = geneNames.find(query,{"gene":1,"_id":0}).limit(limit);
+	var toExec = geneNames.find(query,{"gene":1,"_id":0});
 
 	if (distinct != null) {
-		alert("Distinct value: " + distinct)
 		toExec = toExec.distinct(distinct);
 	}
+
+	toExec.limit(limit);
 
 	toExec.exec(function (error, queryResults) {
 		if (error)
