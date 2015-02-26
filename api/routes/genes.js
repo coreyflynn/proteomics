@@ -8,6 +8,7 @@ router.get('/', function(req, res) {
 
 	var query = {};
 	var limit = req.query.l;
+	var distinct = req.query.d;
 
 	if (req.query.q != null) {
 		try { query = JSON.parse(req.query.q) }
@@ -16,7 +17,12 @@ router.get('/', function(req, res) {
 	
 	if (limit == null) limit = 20;
 
-	geneNames.find(query,{"gene":1,"_id":0}).limit(limit).exec(function (error, queryResults) {
+	var toExec = geneNames.find(query,{"gene":1,"_id":0}).limit(limit);
+
+	if (distinct != null)
+		toExec = toExec.distinct(distinct);
+
+	toExec.exec(function (error, queryResults) {
 		if (error)
 			console.log(error);
 		else
