@@ -18,7 +18,7 @@ router.get('/', function(req, res) {
 	if (limit == null) limit = 20;
 
 	if (distinct != null) {
-		geneNames.find(query,{"gene":1,"_id":0}).distinct(distinct).exec(function (error, queryResults) {
+		geneNames.distinct(query,distinct).exec(function (error, queryResults) {
 			if (error)
 				console.log(error);
 			else
