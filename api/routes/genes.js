@@ -26,7 +26,7 @@ router.get('/', function(req, res) {
 		});
 	}
 	else {
-		geneNames.find(query,{"gene":1,"_id":0}).limit(limit).exec(function (error, queryResults) {
+		geneNames.find(query,{"_id":0}).limit(limit).exec(function (error, queryResults) {
 			if (error)
 				console.log(error);
 			else
