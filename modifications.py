@@ -54,23 +54,29 @@ def process (expid, modifiedSequence, intensity, mods):
 
         obj = {"modifiedSequence":modifiedSequence, "experiments":{}}
         if intensity != "":
-            obj["experiments"][expid] = {intensity:[intensity], modifications: mods}
+            obj["experiments"][expid] = {"intensity":[intensity], "modifications": [mods]}
         else:
-            obj["experiments"][expid] = {str(expid):[], modifications: mods}
+            obj["experiments"][expid] = {"intensity":[], "modifications": [mods]}
         modSeqs.insert(obj)
 
     else:
     # Yes - append to mod document
         obj = res[0]
         key = "experiments." + str(expid)
+        toPush = {}
 
         if intensity != "":
-            toPush = {key:{intensity:[intensity], modifications: mods}
+            toPush[key + ".intensity"] = intensity
         else:
-            toPush = {key:{intensity:[], modifications: mods}
+            toPush[key + ".intensity"] = []
+
+        if mods not in obj['experiments'][expid]['modifications']:
+            toPush[key + ".modifications"] = mods
+
+
 
         # Does the experiment exist?
-        if str(expid) in obj["experiments"]:
+        if expid in obj['experiments']:
         # Yes
             modSeqs.update(criteria, {'$push':toPush})
 
@@ -82,5 +88,5 @@ modSeqs.drop()
 
 # Loop through all gene names in the experiment collection.
 
-for document in evidence.find({},{"expID":1,"modified sequence":1,"intensity":1}).batch_size(30):
-        process(document["expID"],document["modified sequence"].upper(),document["intensity"], document["modifications"])
+for document in evidence.find({},{"expID":1,"modified sequence":1,"intensity":1,"modifications":1}).batch_size(30):
+        process(str(ObjectId(document["expID"])),document["modified sequence"].upper(),document["intensity"], document["modifications"])

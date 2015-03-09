@@ -3,6 +3,7 @@ var router          = express.Router();
 var async           = require('async');
 
 var experiments     = require('./experiments');
+var modseqs         = require('./modseqs');
 var genes           = require('./genes');
 
 var evidence        = require('../models/evidence');
@@ -24,6 +25,7 @@ Array.prototype.unique = function() {
 };
 
 router.use('/experiments', experiments);
+router.use('/modseqs', modseqs);
 router.use('/genes', genes);
 
 router.get('/', function(req, res) {
