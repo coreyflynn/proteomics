@@ -10,20 +10,20 @@ from bson.objectid import ObjectId
 # Connects to the Mongo client
 client = MongoClient('localhost', 27017)
 evidence = client.proteomics.evidence
-geneNames = client.proteomics.geneNames
+proteins = client.proteomics.proteins
 
-# For each gene, use this process to see if it exists.
-def process (geneName, expid, modifiedSequence, intensity, mods):
+# For each protein, use this process to see if it exists.
+def process (protein, expid, modifiedSequence, intensity, mods):
 
-    res = geneNames.find({"gene":geneName})
+    res = proteins.find({"protein":protein})
 
-    # Does gene exist?
+    # Does protein exist?
 
     if res.count() == 0:
-    # No - create new document for gene
-        print("New gene found: " + geneName)
+    # No - create new document for protein
+        print("New protein found: " + protein)
 
-        obj = {"gene":geneName, "modifiedSequences":{}}
+        obj = {"protein":protein, "modifiedSequences":{}}
         obj["modifiedSequences"][modifiedSequence] = {expid:{}}
 
         if intensity != "":
@@ -32,11 +32,11 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
             obj["modifiedSequences"][modifiedSequence][expid]['intensity'] = []
 
         obj["modifiedSequences"][modifiedSequence][expid]['modifications'] = [mods]
-            
-        geneNames.insert(obj)
+
+        proteins.insert(obj)
 
     else:
-    # Yes - append to gene document
+    # Yes - append to protein document
         obj = res[0]
 
         # Does the modification exist?
@@ -52,7 +52,7 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
                 toPush = {key + '.intensity':intensity}
                 if mods not in obj['modifiedSequences'][modifiedSequence][expid]['modifications']:
                     toPush[key + '.modifications'] = mods
-                geneNames.update({"gene":geneName}, {'$push':toPush})
+                proteins.update({"protein":protein}, {'$push':toPush})
 
             else:
 
@@ -60,24 +60,23 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
                 key = "modifiedSequences." + modifiedSequence + "." + expid
                 toPush = {key + '.intensity':[intensity]}
                 toPush[key + '.modifications'] = [mods]
-                geneNames.update({"gene":geneName}, {'$set':toPush})
+                proteins.update({"protein":protein}, {'$set':toPush})
 
         else:
         # No
             key = "modifiedSequences." + modifiedSequence
-            toPush = {key:{expid:{intensity:[intensity]}}}
+            toPush = {key:{expid:{'intensity':[intensity]}}}
             toPush[key][expid]['modifications'] = [mods]
-            print ("Trying to push " + str(toPush))
-            geneNames.update({"gene":geneName}, {'$set':toPush})
+            proteins.update({"protein":protein}, {'$set':toPush})
 
 
-geneNames.drop()
+proteins.drop()
 
-# Loop through all gene names in the experiment collection.
+# Loop through all proteins in the experiment collection.
 
-for document in evidence.find({},{"expID":1,"gene names":1,"modified sequence":1,"modifications":1,"intensity":1}).batch_size(30):
-    if (isinstance(document["gene names"], list)):
-        for gene in document["gene names"]:
-            process(gene.upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
+for document in evidence.find({},{"expID":1,"proteins":1,"modified sequence":1,"modifications":1,"intensity":1}).batch_size(30):
+    if (isinstance(document["proteins"], list)):
+        for protein in document["proteins"]:
+            process(protein.upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
     else:
-        process(document["gene names"].upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
+        process(document["proteins"].upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
