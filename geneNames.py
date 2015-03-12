@@ -65,7 +65,7 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
         else:
         # No
             key = "modifiedSequences." + modifiedSequence
-            toPush = {key:{expid:{intensity:[intensity]}}}
+            toPush = {key:{expid:{'intensity':[intensity]}}}
             toPush[key][expid]['modifications'] = [mods]
             print ("Trying to push " + str(toPush))
             geneNames.update({"gene":geneName}, {'$set':toPush})
