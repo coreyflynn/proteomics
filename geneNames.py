@@ -24,14 +24,14 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
         print("New gene found: " + geneName)
 
         obj = {"gene":geneName, "modifiedSequences":{}}
-        obj["modifiedSequences"][modifiedSequence] = {str(expid):{}}
+        obj["modifiedSequences"][modifiedSequence] = {expid:{}}
 
         if intensity != "":
-            obj["modifiedSequences"][modifiedSequence][str(expid)]['intensity'] = [intensity]
+            obj["modifiedSequences"][modifiedSequence][expid]['intensity'] = [intensity]
         else:
-            obj["modifiedSequences"][modifiedSequence][str(expid)]['intensity'] = []
+            obj["modifiedSequences"][modifiedSequence][expid]['intensity'] = []
 
-        obj["modifiedSequences"][modifiedSequence][str(expid)]['modifications'] = [mods]
+        obj["modifiedSequences"][modifiedSequence][expid]['modifications'] = [mods]
             
         geneNames.insert(obj)
 
@@ -45,7 +45,7 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
         # Yes
 
             # Does the experiment exist?
-            if str(expid) in obj["modifiedSequences"][modifiedSequence]:
+            if expid in obj["modifiedSequences"][modifiedSequence]:
 
             # Yes
                 key = "modifiedSequences." + modifiedSequence + "." + expid
@@ -57,7 +57,7 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
             else:
 
             # No
-                key = "modifiedSequences." + modifiedSequence + "." + str(expid)
+                key = "modifiedSequences." + modifiedSequence + "." + expid
                 toPush = {key + '.intensity':[intensity]}
                 toPush[key + '.modifications'] = [mods]
                 geneNames.update({"gene":geneName}, {'$set':toPush})
@@ -65,8 +65,9 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
         else:
         # No
             key = "modifiedSequences." + modifiedSequence
-            toPush = {key:{str(expid):{intensity:[intensity]}}}
-            toPush = {key:{str(expid):{modifications:[mods]}}}
+            toPush = {key:{expid:{intensity:[intensity]}}}
+            toPush[key][expid]['modifications'] = [mods]
+            print ("Trying to push " + str(toPush))
             geneNames.update({"gene":geneName}, {'$set':toPush})
 
 
