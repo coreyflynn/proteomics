@@ -2,7 +2,7 @@ var express         = require('express');
 var router          = express.Router();
 var async           = require('async');
 var mongoose        = require('mongoose');
-var ObjectId        = mongoose.Schema.Types.ObjectId;
+var ObjectId        = mongoose.Types.ObjectId;
 
 var experiments     = require('./experiments');
 var modseqs         = require('./modseqs');
@@ -44,13 +44,12 @@ router.get('/', function(req, res) {
     try {query     = JSON.parse(req.query.q);}
     catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()}); return;}
 
-    if query.hasOwnProperty('expID'){
+    if (query.hasOwnProperty('expID')){
         query.expID = ObjectId(query.expID);
-        print("Parsing to ObjectId...");
     }
 
     //- F - Fields to return
-    if (req.query.f ! =null) {
+    if (req.query.f != null) {
         try {retCols   = JSON.parse(decodeURIComponent(req.query.f));}
         catch (e) {res.jsonp({error:"Problem parsing return values"}); return;}
     }
