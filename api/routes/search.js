@@ -5,6 +5,7 @@ var mongoose        = require('mongoose');
 var ObjectId        = mongoose.Types.ObjectId;
 
 var experiments     = require('./experiments');
+var proteins        = require('./proteins');
 var modseqs         = require('./modseqs');
 var genes           = require('./genes');
 
@@ -27,8 +28,10 @@ Array.prototype.unique = function() {
 };
 
 router.use('/experiments', experiments);
+router.use('/proteins', proteins);
 router.use('/modseqs', modseqs);
 router.use('/genes', genes);
+
 
 router.get('/', function(req, res) {
 
