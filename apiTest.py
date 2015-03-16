@@ -118,13 +118,13 @@ print('== TIMING SAMPLES '.ljust(width, '='))
 
 # Legacy
 print('Legacy with open params:'.ljust(20)),
-time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={}')","import urllib2").timeit(1)
-print(str(time) + ' ms')
+time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={}', timeout=60)","import urllib2").timeit(1)
+print(str(time) + ' s')
 
 print('Legacy with specific params:'.ljust(20)),
 try:
-    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={\"gene%20names\":\"ACTG\"}', timeout=5)","import urllib2").timeit(1)
-    print(str(time) + ' ms')
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={\"gene%20names\":\"ACTG\"}', timeout=60)","import urllib2").timeit(1)
+    print(str(time) + ' s')
 except:
     print(FAIL + 'request timed out!' + ENDC)
 
@@ -133,43 +133,43 @@ print
 # Restructured
 print('Genes with open params:'.ljust(20)),
 try:
-    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/genes', timeout=5)","import urllib2").timeit(1)
-    print(str(time) + ' ms')
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/genes', timeout=60)","import urllib2").timeit(1)
+    print(str(time) + ' s')
 except:
     print(FAIL + 'request timed out!' + ENDC)
 
 print('Genes with specific params:'.ljust(20)),
 try:
-    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/genes?q={\"gene%20names\":\"ACTG\"}', timeout=5)","import urllib2").timeit(1)
-    print(str(time) + ' ms')
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/genes?q={\"gene%20names\":\"ACTG\"}', timeout=60)","import urllib2").timeit(1)
+    print(str(time) + ' s')
 except:
     print(FAIL + 'request timed out!' + ENDC)
 
 print('Modified sequences with open params:'.ljust(20)),
 try:
-    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/modseqs', timeout=5)","import urllib2").timeit(1)
-    print(str(time) + ' ms')
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/modseqs', timeout=60)","import urllib2").timeit(1)
+    print(str(time) + ' s')
 except:
     print(FAIL + 'request timed out!' + ENDC)
 
-print('Genes with specific params:'.ljust(20)),
+print('Modified sequences with specific params:'.ljust(20)),
 try:
-    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/modseqs?q={\"modifiedSequence\":\"_(AC)AAAAAAAAAAGDSDSWDADTFSMEDPVRK_\"}', timeout=5)","import urllib2").timeit(1)
-    print(str(time) + ' ms')
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/modseqs?q={\"modifiedSequence\":\"_(AC)AAAAAAAAAAGDSDSWDADTFSMEDPVRK_\"}', timeout=60)","import urllib2").timeit(1)
+    print(str(time) + ' s')
 except:
     print(FAIL + 'request timed out!' + ENDC)
 
-print('Genes with open params:'.ljust(20)),
+print('Proteins with open params:'.ljust(20)),
 try:
-    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/proteins', timeout=5)","import urllib2").timeit(1)
-    print(str(time) + ' ms')
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/proteins', timeout=60)","import urllib2").timeit(1)
+    print(str(time) + ' s')
 except:
     print(FAIL + 'request timed out!' + ENDC)
 
-print('Genes with specific params:'.ljust(20)),
+print('Proteins with specific params:'.ljust(20)),
 try:
-    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/proteins?q={\"protein\":\"Q91YE6\"}', timeout=5)","import urllib2").timeit(1)
-    print(str(time) + ' ms')
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/proteins?q={\"protein\":\"Q91YE6\"}', timeout=60)","import urllib2").timeit(1)
+    print(str(time) + ' s')
 except:
     print(FAIL + 'request timed out!' + ENDC)
 
