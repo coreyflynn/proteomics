@@ -122,11 +122,26 @@ print(str(time) + ' ms')
 
 print('Legacy with specific params:'.ljust(20)),
 try:
-    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={\"modifications\":\"Unmodified\"}', timeout=5)","import urllib2").timeit(1)
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={\"gene%20names\":\"ACTG\"}', timeout=5)","import urllib2").timeit(1)
     print(str(time) + ' ms')
 except:
     print(FAIL + 'request timed out!' + ENDC)
 
+print
+
+print('Genes with open params:'.ljust(20)),
+try:
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/genes', timeout=5)","import urllib2").timeit(1)
+    print(str(time) + ' ms')
+except:
+    print(FAIL + 'request timed out!' + ENDC)
+
+print('Genes with specific params:'.ljust(20)),
+try:
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search/genes?q={\"gene%20names\":\"ACTG\"}', timeout=5)","import urllib2").timeit(1)
+    print(str(time) + ' ms')
+except:
+    print(FAIL + 'request timed out!' + ENDC)
 
 print
 
