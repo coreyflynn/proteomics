@@ -1,5 +1,6 @@
 import urllib2
 import json
+import timeit
 
 good = '[PASS]'
 fail = '[FAIL]'
@@ -30,9 +31,7 @@ def getTerminalSize():
         cr = (env.get('LINES', 25), env.get('COLUMNS', 80))
     return int(cr[1]), int(cr[0])
 
-
 (width, height) = getTerminalSize()
-
 
 ################
 # Begin tests! #
@@ -40,14 +39,40 @@ def getTerminalSize():
 
 ## Legacy search
 
+print
 print('== LEGACY SEARCH '.ljust(width, '='))
 
-# 
+#
 intro = 'Testing /search...'
 print(intro),
 try:
-    result = urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={}')
+    result = urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={}', timeout=5)
     print(PASS + good.rjust(width-len(intro)-1) + ENDC)
+    data = json.load(result)
+
+    print('--Evidence..................'),
+	if len(data['evidence']) > 0:
+	    print(PASS + good + ENDC)
+	else:
+	    print(FAIL + fail + ENDC)
+
+	print('--ModSpecificPeptides.......'),
+	if len(data['modificationSpecificPeptides']) > 0:
+	    print(PASS + good + ENDC)
+	else:
+	    print(FAIL + fail + ENDC)
+
+	print('--Peptides..................'),
+	if len(data['peptides']) > 0:
+	    print(PASS + good + ENDC)
+	else:
+	    print(FAIL + fail + ENDC)
+
+	print('--ProteinGroups.............'),
+	if len(data['proteinGroups']) > 0:
+	    print(PASS + good + ENDC)
+	else:
+	    print(FAIL + fail + ENDC)
 
 except:
     print(FAIL + fail.rjust(width-len(intro)-1) + ENDC)
@@ -55,13 +80,14 @@ except:
 
 ## Fast search
 
+print
 print('== RESTRUCTURED COLLECTIONS '.ljust(width, '='))
 
 # Genes
 intro = 'Testing /search/genes...'
 print(intro),
 try:
-    urllib2.urlopen('http://massive.broadinstitute.org:3000/search/genes').read()
+    urllib2.urlopen('http://massive.broadinstitute.org:3000/search/genes', timeout=5).read()
     print(PASS + good.rjust(width-len(intro)-1) + ENDC)
 except:
     print(FAIL + fail.rjust(width-len(intro)-1) + ENDC)
@@ -70,7 +96,7 @@ except:
 intro = 'Testing /search/modseqs...'
 print(intro),
 try:
-    urllib2.urlopen('http://massive.broadinstitute.org:3000/search/modseqs').read()
+    urllib2.urlopen('http://massive.broadinstitute.org:3000/search/modseqs', timeout=5).read()
     print(PASS + good.rjust(width-len(intro)-1) + ENDC)
 except:
     print(FAIL + fail.rjust(width-len(intro)-1) + ENDC)
@@ -79,7 +105,28 @@ except:
 intro = 'Testing /search/proteins...'
 print(intro),
 try:
-    urllib2.urlopen('http://massive.broadinstitute.org:3000/search/proteins').read()
+    urllib2.urlopen('http://massive.broadinstitute.org:3000/search/proteins', timeout=5).read()
     print(PASS + good.rjust(width-len(intro)-1) + ENDC)
 except:
     print(FAIL + fail.rjust(width-len(intro)-1) + ENDC)
+
+
+## Timing samples
+
+print
+print('== TIMING SAMPLES '.ljust(width, '='))
+
+print('Legacy with open params:'.ljust(20)),
+time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={}')","import urllib2").timeit(1)
+print(str(time) + ' ms')
+
+print('Legacy with specific params:'.ljust(20)),
+try:
+    time = timeit.Timer("urllib2.urlopen('http://massive.broadinstitute.org:3000/search?q={\"modifications\":\"Unmodified\"}', timeout=5)","import urllib2").timeit(1)
+    print(str(time) + ' ms')
+except:
+    print(FAIL + 'request timed out!' + ENDC)
+
+
+print
+
