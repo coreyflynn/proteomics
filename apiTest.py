@@ -51,28 +51,28 @@ try:
     data = json.load(result)
 
     print('--Evidence..................'),
-	if len(data['evidence']) > 0:
-	    print(PASS + good + ENDC)
-	else:
-	    print(FAIL + fail + ENDC)
+    if len(data['evidence']) > 0:
+        print(PASS + good + ENDC)
+    else:
+        print(FAIL + fail + ENDC)
 
-	print('--ModSpecificPeptides.......'),
-	if len(data['modificationSpecificPeptides']) > 0:
-	    print(PASS + good + ENDC)
-	else:
-	    print(FAIL + fail + ENDC)
+    print('--ModSpecificPeptides.......'),
+    if len(data['modificationSpecificPeptides']) > 0:
+        print(PASS + good + ENDC)
+    else:
+        print(FAIL + fail + ENDC)
 
-	print('--Peptides..................'),
-	if len(data['peptides']) > 0:
-	    print(PASS + good + ENDC)
-	else:
-	    print(FAIL + fail + ENDC)
+    print('--Peptides..................'),
+    if len(data['peptides']) > 0:
+        print(PASS + good + ENDC)
+    else:
+        print(FAIL + fail + ENDC)
 
-	print('--ProteinGroups.............'),
-	if len(data['proteinGroups']) > 0:
-	    print(PASS + good + ENDC)
-	else:
-	    print(FAIL + fail + ENDC)
+    print('--ProteinGroups.............'),
+    if len(data['proteinGroups']) > 0:
+    print(PASS + good + ENDC)
+    else:
+        print(FAIL + fail + ENDC)
 
 except:
     print(FAIL + fail.rjust(width-len(intro)-1) + ENDC)
