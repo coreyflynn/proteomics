@@ -1,28 +1,27 @@
-from pymongo import MongoClient
-from pymongo.collection import Collection
+import pymongo
 from bson.objectid import ObjectId
 
 # Connects to the Mongo client
-client = MongoClient('localhost', 27017)
+client = pymongo.MongoClient('localhost', 27017)
 evidence = client.proteomics.evidence
 peptides = client.proteomics.peptides
 modPeps  = client.proteomics.modificationSpecificPeptides
 proteins = client.proteomics.proteinGroups
 
-index = {"expID":1,"modified sequence":1,"sequence":1,"proteins":1}
+index = [("expID",pymongo.ASCENDING),("modified sequence",pymongo.ASCENDING),("sequence",pymongo.ASCENDING),("proteins",pymongo.ASCENDING)]
 
 print("Indexing evidence table...")
-evidence.ensureIndex(index)
+evidence.ensure_index(index)
 print("Done!")
 
 print("Indexing peptides table...")
-peptides.ensureIndex(index)
+peptides.ensure_index(index)
 print("Done!")
 
 print("Indexing modificationSpecificPeptides table...")
-modPeps.ensureIndex(index)
+modPeps.ensure_index(index)
 print("Done!")
 
 print("Indexing proteinGroups table...")
-proteins.ensureIndex(index)
+proteins.ensure_index(index)
 print("Done!")
