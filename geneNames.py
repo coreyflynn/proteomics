@@ -32,7 +32,7 @@ def process (geneName, expid, modifiedSequence, intensity, mods):
             obj["modifiedSequences"][modifiedSequence][expid]['intensity'] = []
 
         obj["modifiedSequences"][modifiedSequence][expid]['modifications'] = [mods]
-            
+
         geneNames.insert(obj)
 
     else:
@@ -74,9 +74,15 @@ geneNames.drop()
 
 # Loop through all gene names in the experiment collection.
 
-for document in evidence.find({},{"expID":1,"gene names":1,"modified sequence":1,"modifications":1,"intensity":1}).batch_size(30):
-    if (isinstance(document["gene names"], list)):
-        for gene in document["gene names"]:
-            process(gene.upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
-    else:
-        process(document["gene names"].upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
+for document in evidence.find({},{"_id":0,"expID":1,"gene names":1,"modified sequence":1,"modifications":1,"intensity":1}).batch_size(30):
+    try:
+        if (isinstance(document["gene names"], list)):
+            for gene in document["gene names"]:
+                process(gene.upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
+        else:
+            process(document["gene names"].upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
+    except:
+        try:
+            print("Key error: key doesn't exist here: " + json.dumps(document))
+        except:
+            print("Something happened...")
