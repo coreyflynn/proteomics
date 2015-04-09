@@ -75,8 +75,14 @@ proteins.drop()
 # Loop through all proteins in the experiment collection.
 
 for document in evidence.find({},{"expID":1,"proteins":1,"modified sequence":1,"modifications":1,"intensity":1}).batch_size(30):
-    if (isinstance(document["proteins"], list)):
-        for protein in document["proteins"]:
-            process(protein.upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
-    else:
-        process(document["proteins"].upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
+    try:
+        if (isinstance(document["proteins"], list)):
+            for protein in document["proteins"]:
+                try:
+                    process(protein.upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
+                except:
+                    print("Something happened...")
+        else:
+            process(document["proteins"].upper(),str(ObjectId(document["expID"])),document["modified sequence"],document["intensity"],document['modifications'])
+    except:
+        print ("Proteins attr doesn't exist...")
