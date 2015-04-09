@@ -1,8 +1,13 @@
 var express         = require('express');
 var router          = express.Router();
 var async           = require('async');
+var mongoose        = require('mongoose');
+var ObjectId        = mongoose.Types.ObjectId;
 
 var experiments     = require('./experiments');
+var proteins        = require('./proteins');
+var modseqs         = require('./modseqs');
+var genes           = require('./genes');
 
 var evidence        = require('../models/evidence');
 var peptides        = require('../models/peptides');
@@ -23,6 +28,10 @@ Array.prototype.unique = function() {
 };
 
 router.use('/experiments', experiments);
+router.use('/proteins', proteins);
+router.use('/modseqs', modseqs);
+router.use('/genes', genes);
+
 
 router.get('/', function(req, res) {
 
@@ -37,6 +46,10 @@ router.get('/', function(req, res) {
     //- Q - Query criteria
     try {query     = JSON.parse(req.query.q);}
     catch (e) {res.json({error:"Problem parsing query parameter", exception: e.toString()}); return;}
+
+    if (query.hasOwnProperty('expID')){
+        query.expID = ObjectId(query.expID);
+    }
 
     //- F - Fields to return
     if (req.query.f != null) {
