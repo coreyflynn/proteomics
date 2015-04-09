@@ -64,4 +64,7 @@ modSeqs.drop()
 # Loop through all gene names in the experiment collection.
 
 for document in evidence.find({},{"expID":1,"modified sequence":1,"sequence":1,"intensity":1,"modifications":1}).batch_size(30):
+    try:
         process(str(ObjectId(document["expID"])),document["modified sequence"].upper(),document["sequence"].upper(),document["intensity"], document["modifications"])
+    except:
+        print("Something happened...")
